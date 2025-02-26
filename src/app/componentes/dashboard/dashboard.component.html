@@ -1,1 +1,38 @@
-<p>dashboard works!</p>
+<div class="contenidoDashboard">
+    <header>
+        <ul>
+            <li><img src="/logo.png" alt="logo"></li>
+            <li><div class="contenedorBuscar">
+                <input class="buscador" type="text" placeholder="Buscar">
+                <span class="material-symbols-outlined">search</span>
+            </div></li>
+            <li><div class="usuario">
+                <span class="material-symbols-outlined">person</span>
+            </div></li>
+        </ul>
+    </header>
+    <div class="cuerpo">
+        <nav>
+            <ul>
+                <li *ngFor="let item of ['Dashboard', 'Experiencias', 'Educación', 'Habilidades', 'Certificados', 'Logros', 'Referencias', 'Ajustes']"
+                    (click)="setSelected(item)"
+                    [class.active]="selectedComponent === item">
+                    {{ item }}
+                </li>
+            </ul>
+        </nav>
+    
+        <div class="componentes">
+            <div class="scrollContainer">
+                <app-dash *ngIf="selectedComponent === 'Dashboard'"></app-dash>
+                <app-experiencias *ngIf="selectedComponent === 'Experiencias'"></app-experiencias>
+                <app-educacion *ngIf="selectedComponent === 'Educación'"></app-educacion>
+                <app-habilidades *ngIf="selectedComponent === 'Habilidades'"></app-habilidades>
+                <app-certificados *ngIf="selectedComponent === 'Certificados'"></app-certificados>
+                <app-logros *ngIf="selectedComponent === 'Logros'"></app-logros>
+                <app-referencias *ngIf="selectedComponent === 'Referencias'"></app-referencias>
+                <app-ajustes *ngIf="selectedComponent === 'Ajustes'"></app-ajustes>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,95 @@
+p {
+    margin: 0;
+}
+
+.carta {
+    background-color: white;
+    border-radius: 0 0 20px 20px;
+    overflow: hidden;
+    margin-top: -15px;
+}
+
+.fondo {
+    width: 100%;
+    object-fit: contain;
+}
+
+.usuario {
+    width: 150px;
+    position: absolute;
+    display: flex;
+    bottom: 0;
+    left: 30px;
+    border-radius: 20px;
+    border: 5px solid white;
+}
+
+.contenedorFondo {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    padding-bottom: 30px;
+}
+
+.detalles {
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nombre {
+    font-weight: 600;
+    font-size: 28px;
+}
+
+.especialidad {
+    font-weight: 500;
+}
+
+.origen {
+    font-style: italic;
+}
+
+.edit {
+    border: none;
+    cursor: pointer;
+    transition: all .3s ease;
+    background-color: transparent;
+    border-radius: 50%;
+}
+
+.edit:hover {
+    background-color: rgb(228, 228, 228);
+}
+
+.edit:active {
+    background-color: white;
+    transition: none;
+}
+
+.sobreMi {
+    margin: 30px;
+    background-color: rgba(103, 73, 37, 0.048);
+    padding: 20px;
+    border-radius: 20px;
+    position: relative;
+}
+
+.sobreMiTitulo {
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.editA {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}

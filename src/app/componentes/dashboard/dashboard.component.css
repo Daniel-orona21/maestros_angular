@@ -1,0 +1,156 @@
+.contenidoDashboard {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: white;
+    display: flex;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header ul {
+    list-style: none;
+    width: 100%;
+    padding: 20px;
+    margin: 0;
+    justify-content: space-between;
+    display: flex;
+}
+
+header img {
+    width: 100px;
+    object-fit: contain;
+}
+
+header ul li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contenedorBuscar input{
+    border: none;
+    border-bottom: 3px solid rgba(180, 187, 107, 1);
+    width: 600px;
+    height: 40px;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+.contenedorBuscar input:focus{
+    outline: none;
+    border-bottom: 3px solid rgba(180, 187, 107, 1); 
+    background: none; 
+    box-shadow: none;
+}
+
+.contenedorBuscar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contenedorBuscar span  {
+    position: absolute;
+    right: 10px;
+    transition: all .3s ease;
+    cursor: pointer;
+}
+
+.contenedorBuscar span:hover, .usuario span:hover {
+    color: rgba(0, 0, 0, 0.53);
+}
+.contenedorBuscar span:active, .usuario span:active {
+    color: rgb(0, 0, 0);
+    transition: none;
+}
+
+.cuerpo {
+    flex: 1; 
+    display: flex;
+    box-sizing: border-box;
+    overflow: hidden; 
+}
+
+nav {
+    padding: 30px 20px;
+    display: flex;
+}
+
+nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    list-style: none;
+    padding: 0;
+    width: auto;
+}
+
+nav ul li {
+    position: relative;
+    text-decoration: none;
+    margin: 0;
+    width: min-content;
+    text-transform: uppercase;
+    font-family: "Quattrocento Sans", sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    height: auto;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+nav ul li::after {
+    content: "";
+    position: absolute;
+    left: 0; 
+    bottom: -5px;
+    width: 0; 
+    height: 2px;
+    background-color: rgba(180, 187, 107, 1); 
+    transition: width 0.15s ease-in-out; 
+}
+
+nav ul li:hover::after, nav ul li.active::after {
+    width: 100%; 
+}
+
+.componentes {
+    flex: 1; 
+    display: flex;
+    background-color: rgb(233, 233, 233);
+    overflow: hidden;
+}
+
+.scrollContainer {
+    flex: 1;
+    overflow-y: auto; 
+    max-height: 100vh;
+    scrollbar-width: none;
+    padding: 15px;
+}
+
+.scrollContainer::-webkit-scrollbar {
+    display: none; 
+}
+
+.usuario {
+    background-color: transparent;
+    display: flex;
+    border-radius: 50%;
+    padding: 5px;
+}
+
+.usuario span {
+    transition: all .3s ease;
+    cursor: pointer;
+    font-size: 28px;
+    font-weight: 100;
+}
