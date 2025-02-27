@@ -1,67 +1,71 @@
 <div class="contenido">
-    <img class="utd" src="/utd.jpg" alt="Imagen">
-    <div class="contenedor">
-      <div class="container" [class.right-panel-active]="isRightPanelActive">
-        <div class="form-container sign-up-container">
-          <form>
-            <h1>Crear cuenta</h1>
-            <div class="signIn">
-              <div class="contenedor2">
-                <p class="tipo">E-mail</p>
-                <input type="email" placeholder="Email" name="email" />
-              </div>
-              <div class="contenedor2">
-                <p class="tipo">Password</p>
-                <input type="password" placeholder="Password" name="password" />
-              </div>
-            </div>
-            <button class="mg-btn-30" type="submit">Registrarse</button>
-          </form>
-        </div>
-        <div class="form-container sign-in-container">
-          <form>
-            <h1>Inicia sesión</h1>
-            <div class="signIn">
-              <div class="contenedor2">
-                <p class="tipo">Username</p>
-                <input 
-                  type="text" 
-                  name="username" 
-                  placeholder="Username"  
-                />
-              </div>
-              <div class="contenedor2">
-                <p class="tipo">Contraseña</p>
-                <input 
-                  type="password" 
-                  name="password" 
-                  placeholder="Contraseña"  
-                />
-              </div>
-            </div>
-            <button (click)="entrar()">Entrar</button>
-          </form>
-        </div>
-        <div class="overlay-container">
-          <div class="overlay">
-            <div class="overlay-panel overlay-left">
-              <h1>Bienvenido de nuevo!</h1>
-              <p>Inicia sesión con tu cuenta</p>
-              <button class="ghost" (click)="togglePanel(false)">Inicia sesión</button>
-            </div>
-            <div class="overlay-panel overlay-right">
-              <h1>Hola!</h1>
-              <p>Ingresa tu información e inicia con nosotros</p>
-              <button class="ghost" (click)="togglePanel(true)">Registrarse</button>
-            </div>
+  <img class="utd" src="/utd.jpg" alt="Imagen">
+  
+  <div class="contenedor">
+    <div class="container" [class.right-panel-active]="isRightPanelActive">
+
+<!-- Registro -->
+<div class="form-container sign-up-container">
+  <form (submit)="registrar(); $event.preventDefault()" novalidate>
+    <h1>Crear cuenta</h1>
+    <div class="signIn">
+      <div class="contenedor2">
+        <p class="tipo">Nombre</p>
+        <input type="text" [(ngModel)]="nombre" placeholder="Nombre" name="nombre" required />
+      </div>
+      <div class="contenedor2">
+        <p class="tipo">E-mail</p>
+        <input type="email" [(ngModel)]="correo" placeholder="Email" name="correo" required />
+      </div>
+      <div class="contenedor2">
+        <p class="tipo">Contraseña</p>
+        <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
+      </div>
+    </div>
+    <button class="mg-btn-30" type="submit">Registrarse</button>
+  </form>
+</div>
+
+<!-- Inicio de sesión -->
+<div class="form-container sign-in-container">
+  <form (submit)="entrar(); $event.preventDefault()">
+    <h1>Inicia sesión</h1>
+    <div class="signIn">
+      <div class="contenedor2">
+        <p class="tipo">Correo</p>
+        <input type="email" [(ngModel)]="correo" placeholder="Correo" name="correo" required="true" />
+      </div>
+      <div class="contenedor2">
+        <p class="tipo">Contraseña</p>
+        <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
+      </div>
+    </div>
+    <button type="submit">Entrar</button>
+  </form>
+</div>
+
+      <!-- Panel de Overlay -->
+      <div class="overlay-container">
+        <div class="overlay">
+          <div class="overlay-panel overlay-left">
+            <h1>Bienvenido de nuevo!</h1>
+            <p>Inicia sesión con tu cuenta</p>
+            <button class="ghost" (click)="togglePanel(false)">Inicia sesión</button>
+          </div>
+          <div class="overlay-panel overlay-right">
+            <h1>Hola!</h1>
+            <p>Ingresa tu información e inicia con nosotros</p>
+            <button class="ghost" (click)="togglePanel(true)">Registrarse</button>
           </div>
         </div>
       </div>
-    </div>
-    
-    <div class="fondo">
-      <div class="mapa-blur"></div> 
-      <div class="mapa" #loginMapContainer id="loginMap"></div>
+      
     </div>
   </div>
-  
+
+  <!-- Fondo y Mapa -->
+  <div class="fondo">
+    <div class="mapa-blur"></div> 
+    <div class="mapa" #loginMapContainer id="loginMap"></div>
+  </div>
+</div>
