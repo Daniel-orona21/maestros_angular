@@ -1,0 +1,50 @@
+<div class="contenidoDashboard">
+    <header>
+      <ul>
+        <li>
+          <div class="liizquierdo">
+            <img src="assets/logo.png" alt="logo" />
+            <div class="breadCrumb">
+              <span (click)="resetVista()" class="breadcrumb-link">Inicio</span> 
+              <span *ngIf="breadcrumb" (click)="handleBreadcrumbClick()" class="breadcrumb-link"> > {{ breadcrumb }}</span>
+            </div>
+          </div>
+        </li>
+        <li></li>
+        <li>
+          <div class="liderecho">
+            <div class="contenedorBuscar">
+              <input class="buscador" type="text" placeholder="Buscar" />
+              <span class="material-symbols-outlined">search</span>
+            </div>
+            <div class="usuario">
+              <span class="material-symbols-outlined">person</span>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </header>
+  
+    <div class="inicio">
+      <div class="selector" *ngIf="!vistaSeleccionada">
+        <div class="dash">
+            <img src="assets/seniora.jpg" alt="">
+            <button (click)="seleccionarVista('Mi perfil')">Mi Perfil</button>
+        </div>
+        <div class="control">
+            <img src="assets/alumnos.jpg" alt="">
+            <button (click)="seleccionarVista('Control escolar')">Mis alumnos</button>
+        </div>
+      </div>
+  
+      <app-dashboard 
+        *ngIf="vistaSeleccionada === 'Mi perfil'"
+        (onDashboardNav)="actualizarBreadcrumb($event)">
+      </app-dashboard>
+      
+      <app-control-escolar 
+        *ngIf="vistaSeleccionada === 'Control escolar'"
+        (actualizarBreadcrumb)="actualizarBreadcrumb($event)">
+      </app-control-escolar>
+    </div>
+  </div>

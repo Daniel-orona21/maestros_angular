@@ -1,0 +1,175 @@
+.inicio {
+    flex: 1;  
+    min-height: 0; 
+    overflow: scroll;
+}
+
+.inicio::-webkit-scrollbar {
+    display: none;
+}
+
+app-dashboard, app-control-escolar {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.contenidoDashboard {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: white;
+    display: flex;
+    z-index: 999;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header ul {
+    list-style: none;
+    width: 100%;
+    padding: 20px;
+    margin: 0;
+    justify-content: space-between;
+    display: flex;
+}
+
+header img {
+    width: 100px;
+    object-fit: contain;
+}
+
+header ul li {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contenedorBuscar input{
+    border: none;
+    border-bottom: 3px solid rgba(180, 187, 107, 1);
+    width: 500px;
+    height: 40px;
+    padding: 5px 10px;
+    font-size: 14px;
+}
+
+.contenedorBuscar input:focus{
+    outline: none;
+    border-bottom: 3px solid rgba(180, 187, 107, 1); 
+    background: none; 
+    box-shadow: none;
+}
+
+.contenedorBuscar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contenedorBuscar span  {
+    position: absolute;
+    right: 10px;
+    transition: all .3s ease;
+    cursor: pointer;
+}
+
+.contenedorBuscar span:hover, .usuario span:hover {
+    color: rgba(0, 0, 0, 0.53);
+}
+.contenedorBuscar span:active, .usuario span:active {
+    color: rgb(0, 0, 0);
+    transition: none;
+}
+
+.breadCrumb {
+  display: flex;  
+} 
+
+.liizquierdo, .liderecho {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.breadCrumb {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .breadCrumb span {
+    cursor: pointer;
+    color: #007bff;
+  }
+  
+  .breadCrumb span:first-child {
+    cursor: pointer;
+    color: #000;
+  }
+  
+  .selector {
+    display: flex;
+    align-items: center;justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+  }
+
+.dash, .control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+    flex: 1;
+    height: 100%;
+    position: relative;
+    transition: all .5s ease;
+}
+
+
+.dash:hover, .control:hover {
+    flex: 1.5;
+}
+    
+  
+.dash img, .control img {
+    width: 100%;
+    height: 100%; 
+    object-fit: cover;
+    position: absolute;
+    transform: scale(1.1);
+    transition: all .5s ease;
+}
+
+
+.dash button, .control button {
+    z-index: 99;
+    background-color: rgba(0, 0, 0, 0.314);
+    border: none;
+    font-size: 24px;
+    color: white;
+    font-weight: 700;
+    padding: 10px 20px;
+    border: 2px solid white;
+    border-radius: 30px;
+    pointer-events: auto;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); 
+    transition: all 0.3s ease;
+}
+
+.dash button:hover, .control button:hover {
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.7);
+    transform: scale(1.05); 
+}
+

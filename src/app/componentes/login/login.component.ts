@@ -49,7 +49,7 @@ export class LoginComponent {
     this.authService.login(this.correo, this.contrasena).subscribe({
       next: res => {
         localStorage.setItem('token', res.token);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/inicio']);
       },
       error: err => alert('Error al iniciar sesión: ' + err.error.error)
     });

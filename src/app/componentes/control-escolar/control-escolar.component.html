@@ -1,0 +1,113 @@
+<div class="cuerpo">
+  <div class="carta">
+    <h1 *ngIf="!grupoSeleccionado">Mis grupos</h1>
+   <div class="botones" *ngIf="grupoSeleccionado">
+  <span (click)="obtenerGrupos()" class="material-symbols-outlined">arrow_back</span>
+  <h1>Alumnos de {{ grupoSeleccionado.grado }}° {{ grupoSeleccionado.grupo }}</h1>
+
+  <div class="contenedorBuscar">
+    <input 
+    type="text" 
+    placeholder="Buscar alumno..."
+    class="buscador"
+    [(ngModel)]="filtroAlumno"
+    (input)="filtrarAlumnos()"
+  />
+   <span class="material-symbols-outlined" >close</span>
+  </div>
+
+  <div class="edicion">
+    <span class="material-symbols-outlined confirm" *ngIf="modoEliminacion" (click)="eliminarAlumnosSeleccionados()">check</span>
+    <span 
+      class="material-symbols-outlined delete" 
+      [ngClass]="{'deleteA': modoEliminacion}" 
+      (click)="activarModoEliminacion()">delete</span>
+    <span 
+      class="material-symbols-outlined edit" 
+      [ngClass]="{'activo': modoEdicion}" 
+      (click)="activarModoEdicion()">edit</span>
+  </div>
+</div>
+    <div class="grupos" *ngIf="!grupoSeleccionado">
+      <div *ngIf="grupos.length > 0; else noGrupos">
+        <div *ngFor="let grupo of grupos" class="grupo" (click)="seleccionarGrupo(grupo)">
+          <div class="infoGrupo">
+            <div class="grupoFoto" 
+                 [ngClass]="{'grupo-a': grupo.carrera === 'Tecnologías de la Información', 'grupo-b': grupo.carrera === 'Diseño Digital'}">
+              <h2>{{ grupo.grado }}° {{ grupo.grupo }}</h2>
+            </div>
+            <div class="datosGrupo">
+              <p><strong>Carrera:</strong> {{ grupo.carrera }}</p>
+              <p><strong>Modalidad:</strong> {{ grupo.modalidad }}</p>
+            </div>
+          </div>
+          <span class="material-symbols-outlined">edit</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="alumnos" *ngIf="grupoSeleccionado">
+      <div *ngIf="alumnos.length > 0; else noAlumnos">
+        <table class="tabla-alumnos">
+          <thead>
+           <span class="material-symbols-outlined" (click)="descargarPDF()">download</span>
+     <tr>
+       <th>Nombre</th>
+       <th>Apellido</th>
+       <th>Grado</th>
+       <th>{{ fechaHoy }}</th>
+       <th>
+         Asistencia
+         <button (click)="activarAsistencia()">Tomar asistencia</button>
+       </th>
+     </tr>
+   </thead>
+   <tbody>
+    <tr *ngFor="let alumno of alumnosFiltrados; let i = index" [class.fila-gris]="i % 2 === 0"
+        (click)="abrirModalEdicion(alumno)">
+      <td>{{ alumno.nombre }}</td>
+      <td>{{ alumno.apellido }}</td>
+      <td>{{ alumno.grado }}</td>
+      <td>{{ alumno.asistencia !== undefined ? alumno.asistencia : '' }}</td>
+      <td>
+        <ng-container *ngIf="modoEliminacion">
+          <input type="checkbox" [(ngModel)]="alumno.seleccionado" />
+        </ng-container>
+        <div class="botoneraAsis" *ngIf="!modoEliminacion && i === 0 && asistenciaTomada && alumno.asistencia === undefined">
+          <button class="botonAsis si" (click)="registrarAsistencia(alumno, true)">✔</button>
+          <button class="botonAsis no" (click)="registrarAsistencia(alumno, false)">✖</button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+ </table>
+      </div>
+    </div>
+
+    <ng-template #noGrupos>
+      <p class="mensajeNoGrupos">No hay grupos disponibles.</p>
+    </ng-template>
+
+    <ng-template #noAlumnos>
+      <p class="mensajeNoGrupos">No hay alumnos en este grupo.</p>
+    </ng-template>
+  </div>
+
+  <div class="modal" *ngIf="alumnoEditando">
+    <div class="modal-content">
+      <h2>Editar Alumno</h2>
+      <div class="modal-body">
+        <label for="nombre">Nombre:</label>
+        <input id="nombre" type="text" [(ngModel)]="nuevoNombre" />
+  
+        <label for="apellido">Apellido:</label>
+        <input id="apellido" type="text" [(ngModel)]="nuevoApellido" />
+      </div>
+      
+      <div class="modal-footer">
+        <button class="guardar" (click)="guardarEdicion()">Guardar</button>
+        <button class="cancelar" (click)="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>

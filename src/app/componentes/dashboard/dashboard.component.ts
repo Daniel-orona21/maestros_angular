@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit } from '@angular/core';
 import { DashComponent } from "../pages/dash/dash.component";
 import { ExperienciasComponent } from "../pages/experiencias/experiencias.component";
 import { EducacionComponent } from "../pages/educacion/educacion.component";
@@ -15,10 +15,21 @@ import { CommonModule } from '@angular/common';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
+  @Output() onDashboardNav = new EventEmitter<string>();
   selectedComponent: string = 'Dashboard';
+
+  ngOnInit() {
+    this.onDashboardNav.emit('Dashboard'); 
+  }
 
   setSelected(component: string) {
     this.selectedComponent = component;
+    this.onDashboardNav.emit(component);
+  }
+
+  resetToDashboard() {
+    this.selectedComponent = 'Dashboard';
+    this.onDashboardNav.emit('Dashboard');
   }
 }
