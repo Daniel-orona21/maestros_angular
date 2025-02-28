@@ -17,15 +17,17 @@
   </div>
 
   <div class="edicion">
-    <span class="material-symbols-outlined confirm" *ngIf="modoEliminacion" (click)="eliminarAlumnosSeleccionados()">check</span>
+    <span matTooltip="Eliminar seleccionados" class="material-symbols-outlined confirm" *ngIf="modoEliminacion" (click)="eliminarAlumnosSeleccionados()">check</span>
+    
     <span 
-      class="material-symbols-outlined delete" 
-      [ngClass]="{'deleteA': modoEliminacion}" 
-      (click)="activarModoEliminacion()">delete</span>
-    <span 
-      class="material-symbols-outlined edit" 
-      [ngClass]="{'activo': modoEdicion}" 
-      (click)="activarModoEdicion()">edit</span>
+  [matTooltip]="modoEliminacion ? 'Cancelar eliminar' : 'Eliminar alumnos'" 
+  class="material-symbols-outlined delete" 
+  [ngClass]="{'deleteA': modoEliminacion}" 
+  (click)="activarModoEliminacion()">
+  delete
+</span>
+  
+    <span matTooltip="Editar" class="material-symbols-outlined edit" [ngClass]="{'activo': modoEdicion}" (click)="activarModoEdicion()">edit</span>
   </div>
 </div>
     <div class="grupos" *ngIf="!grupoSeleccionado">
@@ -50,7 +52,7 @@
       <div *ngIf="alumnos.length > 0; else noAlumnos">
         <table class="tabla-alumnos">
           <thead>
-           <span class="material-symbols-outlined" (click)="descargarPDF()">download</span>
+           <span matTooltip="Descargar reporte" class="material-symbols-outlined" (click)="descargarPDF()">download</span>
      <tr>
        <th>Nombre</th>
        <th>Apellido</th>
@@ -58,7 +60,7 @@
        <th>{{ fechaHoy }}</th>
        <th>
          Asistencia
-         <button (click)="activarAsistencia()">Tomar asistencia</button>
+         <button class="botonAsistencia" (click)="activarAsistencia()">Tomar asistencia</button>
        </th>
      </tr>
    </thead>

@@ -101,9 +101,7 @@
     background-color: rgba(128, 128, 128, 0.21);
 }
 
-.edit:hover {
-    background-color: rgba(0, 195, 225, 0.21) !important;
-}
+
 
 .edit:active {
     background-color: rgba(0, 195, 225, 0.779) !important;
@@ -114,17 +112,30 @@
     background-color:rgba(0, 195, 225, 0.296) !important;
   }
 
-  .confirm:hover, .delete:hover {
-    background-color: rgba(225, 0, 0, 0.21) !important;
+  
+  .delete:hover {
+    background-color:rgb(255, 208, 0) !important;
 }
 
-.confirm:active, .delete:active {
-    background-color: rgba(225, 0, 0, 0.779) !important;
+.delete:active {
+    background-color: rgb(225, 150, 0) !important;
     transition: none;
 }
 
-.confirm, .deleteA {
-    background-color:rgba(225, 0, 0, 0.296) !important;
+.confirm:hover { 
+  background-color: rgba(225, 0, 0, 0.633) !important;
+}
+.confirm:active {
+    background-color:rgb(255, 0, 0) !important;
+    transition: none;
+}
+
+ .deleteA {
+    background-color:rgba(255, 208, 0, 0.603) !important;
+ }
+
+.confirm {
+    background-color:rgba(255, 0, 0, 0.502) !important;
 }
 
 .edicion {
@@ -149,19 +160,25 @@
 .tabla-alumnos span {
     display: inline-flex;
     position: absolute;
-    top: 20px;
+    top: 25px;
     right: 20px;
-    background-color: white;
+    background-color: rgb(200, 200, 200);
     border-radius: 5px;
     cursor: pointer;
 }
 
-.tabla-alumnos span:hover {
+.botonAsistencia {
+    border-radius: 5px;
+    border: none;
+    font-weight: 800;
+}
+
+.botonAsistencia:hover, .tabla-alumnos span:hover {
     background-color: rgba(182, 182, 182, 0.591);
     color: white;
 }
 
-.tabla-alumnos span:active {
+.botonAsistencia:active, .tabla-alumnos span:active {
     background-color: white;
     color: black
 }

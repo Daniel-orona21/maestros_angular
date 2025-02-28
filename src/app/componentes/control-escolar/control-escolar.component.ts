@@ -4,11 +4,12 @@ import { GruposService } from './services/grupos.service';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-control-escolar',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatTooltipModule],
   templateUrl: './control-escolar.component.html',
   styleUrls: ['./control-escolar.component.css']
 })

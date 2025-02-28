@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -20,5 +20,17 @@ export class AuthService {
 
   logout(): Observable<any> {
     return this.http.post(`${this.apiUrl}/logout`, {}); 
+  }
+
+  verifyToken(): Observable<any> {
+    const token = localStorage.getItem('token'); // Obtener el token almacenado
+    if (!token) {
+      return new Observable(observer => {
+        observer.error({ error: 'Token no encontrado' });
+      });
+    }
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get(`${this.apiUrl}/verify-token`, { headers });
   }
 }

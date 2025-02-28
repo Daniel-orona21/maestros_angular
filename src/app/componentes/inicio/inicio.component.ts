@@ -2,6 +2,8 @@ import { Component, ViewChild } from '@angular/core';
 import { DashboardComponent } from "../dashboard/dashboard.component";
 import { ControlEscolarComponent } from "../control-escolar/control-escolar.component";
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-inicio',
@@ -16,10 +18,25 @@ export class InicioComponent {
   @ViewChild(DashboardComponent) dashboardComponent!: DashboardComponent;
   @ViewChild(ControlEscolarComponent) controlEscolarComponent!: ControlEscolarComponent;
 
+  constructor(private authService: AuthService, private router: Router) {}
+
   seleccionarVista(vista: string) {
     this.vistaSeleccionada = vista;
     this.breadcrumb = vista;
   }
+
+  ngOnInit() {
+    this.authService.verifyToken().subscribe({
+      next: (response) => {
+        console.log('Token válido:', response);
+      },
+      error: (error) => {
+        console.warn('Token inválido:', error);
+        this.router.navigate(['/login']); // Redirige a la página de inicio de sesión
+      }
+    });
+  }
+
 
   resetVista() {
     this.vistaSeleccionada = null;
