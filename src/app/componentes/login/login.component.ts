@@ -1,17 +1,17 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 
-
 @Component({
   selector: 'app-login',
+  standalone: true, 
   imports: [CommonModule, FormsModule], 
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   isRightPanelActive: boolean = false;
   @ViewChild('loginMapContainer', { static: false }) loginMapContainer!: ElementRef;
 
@@ -22,6 +22,10 @@ export class LoginComponent {
   password: string = '';
 
   constructor(private router: Router, private authService: AuthService) {}
+
+  ngOnInit(): void {
+
+  }
 
   togglePanel(activate: boolean): void {
     this.isRightPanelActive = activate;
@@ -38,20 +42,22 @@ export class LoginComponent {
   }
 
   entrar() {
-    console.log('Valores antes de enviar:', { correo: this.correo, contrasena: this.contrasena }); 
-  
+    console.log('Valores antes de enviar:', { correo: this.correo, contrasena: this.contrasena });
+
     if (!this.correo || !this.contrasena) {
       alert('⚠️ Por favor, ingresa tu correo y contraseña.');
       console.error('❌ Error: No se ingresaron todos los datos');
       return;
     }
-  
+
     this.authService.login(this.correo, this.contrasena).subscribe({
       next: res => {
         localStorage.setItem('token', res.token);
         this.router.navigate(['/inicio']);
       },
-      error: err => alert('Error al iniciar sesión: ' + err.error.error)
+      error: err => {
+        alert('Error al iniciar sesión: ' + err.error.error);
+      }
     });
   }
 }

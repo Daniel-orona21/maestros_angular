@@ -13,6 +13,11 @@ const JWT_SECRET = process.env.JWT_SECRET;
 app.use(express.json());
 app.use(cors());
 
+//importar rutas de autenticacion
+const authRoutes = require('./authRoutes'); // O './routes/authRoutes' si está en una subcarpeta
+app.use('/auth', authRoutes);
+
+
 // Conexión a la base de datos
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -27,6 +32,11 @@ db.connect(err => {
   } else {
     console.log('Conectado a la base de datos MySQL');
   }
+});
+
+// Servidor corriendo
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
 // 🟢 Registro de usuario (POST)
