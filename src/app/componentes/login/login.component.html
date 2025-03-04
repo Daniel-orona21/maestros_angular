@@ -4,45 +4,48 @@
   <div class="contenedor">
     <div class="container" [class.right-panel-active]="isRightPanelActive">
 
-<!-- Registro -->
-<div class="form-container sign-up-container">
-  <form (submit)="registrar(); $event.preventDefault()" novalidate>
-    <h1>Crear cuenta</h1>
-    <div class="signIn">
-      <div class="contenedor2">
-        <p class="tipo">Nombre</p>
-        <input type="text" [(ngModel)]="nombre" placeholder="Nombre" name="nombre" required />
+      <!-- Registro -->
+      <div class="form-container sign-up-container">
+        <form (submit)="registrar(); $event.preventDefault()" novalidate>
+          <h1>Crear cuenta</h1>
+          <div class="signIn">
+            <div class="contenedor2">
+              <p class="tipo">Nombre</p>
+              <input type="text" [(ngModel)]="nombre" placeholder="Nombre" name="nombre" required />
+            </div>
+            <div class="contenedor2">
+              <p class="tipo">E-mail</p>
+              <input type="email" [(ngModel)]="correo" placeholder="Email" name="correo" required />
+            </div>
+            <div class="contenedor2">
+              <p class="tipo">Contraseña</p>
+              <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
+            </div>
+          </div>
+          <button class="mg-btn-30" type="submit">Registrarse</button>
+        </form>
       </div>
-      <div class="contenedor2">
-        <p class="tipo">E-mail</p>
-        <input type="email" [(ngModel)]="correo" placeholder="Email" name="correo" required />
-      </div>
-      <div class="contenedor2">
-        <p class="tipo">Contraseña</p>
-        <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
-      </div>
-    </div>
-    <button class="mg-btn-30" type="submit">Registrarse</button>
-  </form>
-</div>
 
-<!-- Inicio de sesión -->
-<div class="form-container sign-in-container">
-  <form (submit)="entrar(); $event.preventDefault()">
-    <h1>Inicia sesión</h1>
-    <div class="signIn">
-      <div class="contenedor2">
-        <p class="tipo">Correo</p>
-        <input type="email" [(ngModel)]="correo" placeholder="Correo" name="correo" required="true" />
-      </div>
-      <div class="contenedor2">
-        <p class="tipo">Contraseña</p>
-        <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
-      </div>
-    </div>
-    <button type="submit">Entrar</button>
-  </form>
+
+      <!-- Inicio de sesión -->
+      <div class="form-container sign-in-container">
+        <form (submit)="entrar(); $event.preventDefault()">
+          <h1>Inicia sesión</h1>
+          <div class="signIn">
+            <div class="contenedor2">
+              <p class="tipo">Correo</p>
+              <input type="email" [(ngModel)]="correo" placeholder="Correo" name="correo" required />
+            </div>
+            <div class="contenedor2">
+              <p class="tipo">Contraseña</p>
+              <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
+            </div>
+           
 </div>
+          
+          <button type="submit">Entrar</button>
+        </form>
+      </div>
 
       <!-- Panel de Overlay -->
       <div class="overlay-container">
@@ -59,7 +62,7 @@
           </div>
         </div>
       </div>
-      
+
     </div>
   </div>
 
