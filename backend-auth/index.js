@@ -4,10 +4,12 @@ const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET;
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 
 // Middleware
 app.use(express.json());
@@ -31,32 +33,42 @@ db.connect(err => {
 
 // 🟢 Registro de usuario (POST)
 app.post('/register', async (req, res) => {
-    console.log('Datos recibidos:', req.body); // Verifica qué está recibiendo el servidor
+    console.log('Datos recibidos:', req.body);
   
-    const { nombre, correo, contrasena } = req.body;
-    if (!nombre || !correo || !contrasena) {
+    const { nombre, correo, contrasena, captchaToken } = req.body;
+    if (!nombre || !correo || !contrasena || !captchaToken) {
       return res.status(400).json({ error: 'Faltan datos' });
     }
 
-  try {
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
-    const sql = 'INSERT INTO usuarios (nombre, correo, contrasena) VALUES (?, ?, ?)';
+    try {
+      // Verificar el token de reCAPTCHA
+      const recaptchaResponse = await axios.post(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${captchaToken}`
+      );
 
-    db.query(sql, [nombre, correo, hashedPassword], (err, result) => {
-      if (err) {
-        if (err.code === 'ER_DUP_ENTRY') {
-          return res.status(400).json({ error: 'El correo ya está registrado' });
-        }
-        return res.status(500).json({ error: 'Error al registrar usuario' });
+      if (!recaptchaResponse.data.success) {
+        return res.status(400).json({ error: 'Verificación de reCAPTCHA fallida' });
       }
-      res.json({ message: 'Usuario registrado correctamente' });
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error al procesar la solicitud' });
-  }
+
+      const hashedPassword = await bcrypt.hash(contrasena, 10);
+      const sql = 'INSERT INTO usuarios (nombre, correo, contrasena) VALUES (?, ?, ?)';
+
+      db.query(sql, [nombre, correo, hashedPassword], (err, result) => {
+        if (err) {
+          if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ error: 'El correo ya está registrado' });
+          }
+          return res.status(500).json({ error: 'Error al registrar usuario' });
+        }
+        res.json({ message: 'Usuario registrado correctamente' });
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'Error al procesar la solicitud' });
+    }
 });
 
-// 🔵 Login de usuario (POST)
+// �� Login de usuario (POST)
 app.post('/login', (req, res) => {
     console.log('Datos recibidos en login:', req.body); // ✅ Verifica qué datos llegan
   

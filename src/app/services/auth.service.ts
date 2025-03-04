@@ -10,8 +10,13 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  register(nombre: string, correo: string, contrasena: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, { nombre, correo, contrasena });
+  register(nombre: string, correo: string, contrasena: string, captchaToken: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, { 
+      nombre, 
+      correo, 
+      contrasena,
+      captchaToken 
+    });
   }
 
   login(correo: string, contrasena: string): Observable<any> {

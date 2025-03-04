@@ -1,9 +1,15 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 
+declare const grecaptcha: any;
+declare global {
+  interface Window {
+    onCaptchaSuccess: (response: string) => void;
+  }
+}
 
 @Component({
   selector: 'app-login',
@@ -20,20 +26,52 @@ export class LoginComponent {
   contrasena: string = '';
   username: string = '';
   password: string = '';
+  captchaResponse: string = '';
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private router: Router, 
+    private authService: AuthService,
+    private ngZone: NgZone
+  ) {
+    // Agregar callback global para el captcha
+    window['onCaptchaSuccess'] = (response: string) => {
+      this.ngZone.run(() => {
+        this.captchaResponse = response;
+      });
+    };
+  }
 
   togglePanel(activate: boolean): void {
     this.isRightPanelActive = activate;
+    if (!activate) {
+      this.captchaResponse = '';
+      grecaptcha.reset();
+    }
   }
 
   registrar() {
-    this.authService.register(this.nombre, this.correo, this.contrasena).subscribe({
+    if (!this.captchaResponse) {
+      alert('Por favor, completa el captcha');
+      return;
+    }
+
+    this.authService.register(
+      this.nombre, 
+      this.correo, 
+      this.contrasena,
+      this.captchaResponse
+    ).subscribe({
       next: res => {
         alert('Registro exitoso');
         this.togglePanel(false);
+        this.captchaResponse = '';
+        grecaptcha.reset();
       },
-      error: err => alert('Error en el registro: ' + err.error.error)
+      error: err => {
+        alert('Error en el registro: ' + err.error.error);
+        this.captchaResponse = '';
+        grecaptcha.reset();
+      }
     });
   }
 
