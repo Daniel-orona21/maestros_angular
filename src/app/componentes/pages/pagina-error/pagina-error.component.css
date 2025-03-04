@@ -1,0 +1,111 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
+:root {
+  --white: #f2f5f5;
+  --black: #121212;
+  --blue: #388bd1;
+  --gray: #959695;
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  font-family: Montserrat, sans-serif;
+  color: var(--white);
+  background-color: var(--black);
+}
+
+.error_container {
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 10px;
+}
+
+.error_code {
+  width: 100%;
+  font-size: 6rem;
+  font-weight: 800;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.error_code p:first-of-type {
+  animation: fall 1s linear;
+}
+
+.error_code p:last-of-type {
+  animation: fall 1.8s linear;
+}
+
+.error_code p:nth-of-type(2) {
+  color: var(--blue);
+  animation: bounce 1.25s 1.8s linear forwards;
+  opacity: 0;
+}
+
+.error_title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.error_description {
+  font-size: 1rem;
+  text-align: justify;
+  line-height: 1.6;
+  color: var(--gray);
+  padding: 0 10%;
+}
+
+.action {
+  font: inherit;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  background-color: var(--blue);
+  color: var(--white);
+}
+
+.action:hover {
+  opacity: 0.8;
+}
+
+/* Animaciones */
+@keyframes fall {
+  0% {
+    transform: translateY(-100vh);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 40%, 75%, 95% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  15% {
+    transform: translateY(-25px);
+  }
+  65% {
+    transform: translateY(-15px);
+  }
+  85% {
+    transform: translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
