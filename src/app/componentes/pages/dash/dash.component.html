@@ -1,7 +1,12 @@
 <div class="carta" *ngIf="!cargando && !error">
     <div class="contenedorFondo">
         <img class="fondo" src="assets/Background_image.png" alt="fondo">
-        <img class="usuario" [src]="usuario?.foto_perfil || 'assets/usuario.png'" [alt]="usuario?.nombre || 'Usuario'">
+        <div class="contenedorUsuario" (click)="editarFoto()">
+            <img class="usuario" [src]="usuario?.foto_perfil || 'assets/usuario.png'" [alt]="usuario?.nombre || 'Usuario'">
+            <div class="overlay-usuario">
+                <span class="material-symbols-outlined">edit</span>
+            </div>
+        </div>
     </div>
 
     <div class="detalles">

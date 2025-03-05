@@ -5,15 +5,46 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const axios = require('axios');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const sharp = require('sharp');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 
+// Asegurar que el directorio de uploads existe
+const uploadDir = path.join(__dirname, 'uploads/profile-pics');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configuración de multer para subida de imágenes
+const storage = multer.memoryStorage(); // Cambiamos a memoria para procesar antes de guardar
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max
+  },
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|webp/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, webp)'));
+  }
+});
+
 // Middleware
 app.use(express.json());
 app.use(cors());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Conexión a la base de datos
 const db = mysql.createConnection({
@@ -265,6 +296,74 @@ app.put('/user-info', (req, res) => {
       res.json({ message: 'Información actualizada correctamente' });
     });
   });
+});
+
+// 🖼️ Actualizar foto de perfil
+app.post('/update-profile-pic', upload.single('foto'), async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ error: 'Token no proporcionado' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se ha proporcionado ninguna imagen' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Procesar la imagen con sharp
+    const filename = 'profile-' + Date.now() + '.webp';
+    const filepath = path.join(uploadDir, filename);
+
+    // Procesar y recortar la imagen en un cuadrado
+    await sharp(req.file.buffer)
+      .resize(500, 500, { // Tamaño fijo de 500x500
+        fit: sharp.fit.cover, // Recortar y centrar
+        position: 'center'
+      })
+      .webp({ quality: 80 }) // Convertir a webp para mejor compresión
+      .toFile(filepath);
+
+    // Obtener la foto anterior para eliminarla
+    const sqlSelect = 'SELECT foto_perfil FROM usuarios WHERE id = ?';
+    db.query(sqlSelect, [decoded.id], (err, results) => {
+      if (err) {
+        console.error('Error al obtener foto anterior:', err);
+      } else if (results[0]?.foto_perfil) {
+        const oldPath = path.join(__dirname, results[0].foto_perfil.replace(/^\/uploads\//, 'uploads/'));
+        if (fs.existsSync(oldPath)) {
+          fs.unlink(oldPath, (err) => {
+            if (err) console.error('Error al eliminar foto anterior:', err);
+          });
+        }
+      }
+
+      // Actualizar con la nueva foto
+      const newPhotoUrl = `/uploads/profile-pics/${filename}`;
+      const sqlUpdate = 'UPDATE usuarios SET foto_perfil = ? WHERE id = ?';
+      
+      db.query(sqlUpdate, [newPhotoUrl, decoded.id], (err, result) => {
+        if (err) {
+          console.error('Error al actualizar foto de perfil:', err);
+          return res.status(500).json({ error: 'Error al actualizar foto de perfil' });
+        }
+
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json({ 
+          message: 'Foto de perfil actualizada correctamente',
+          foto_perfil: newPhotoUrl
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error procesando la imagen:', error);
+    res.status(500).json({ error: 'Error al procesar la imagen' });
+  }
 });
 
 // Servidor corriendo

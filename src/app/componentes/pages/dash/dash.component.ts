@@ -112,4 +112,99 @@ export class DashComponent implements OnInit {
       }
     });
   }
+
+  async editarFoto() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp';
+
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Validar tamaño
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'La imagen no debe superar los 5MB'
+        });
+        return;
+      }
+
+      // Crear vista previa
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const imageUrl = e.target?.result as string;
+        
+        const result = await Swal.fire({
+          title: '¿Quieres usar esta foto?',
+          imageUrl: imageUrl,
+          imageWidth: 300,
+          imageHeight: 300,
+          showCancelButton: true,
+          confirmButtonText: 'Sí, actualizar',
+          cancelButtonText: 'Cancelar',
+          imageAlt: 'Vista previa de la foto de perfil',
+          customClass: {
+            image: 'preview-image'
+          },
+          didOpen: () => {
+            // Agregar estilos para la imagen de vista previa
+            const style = document.createElement('style');
+            style.textContent = `
+              .preview-image {
+                object-fit: contain !important;
+                width: 300px !important;
+                height: 300px !important;
+                background-color: #f8f9fa;
+                border-radius: 10px;
+              }
+            `;
+            document.head.appendChild(style);
+          }
+        });
+
+        if (result.isConfirmed) {
+          await this.subirFoto(file);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
+    input.click();
+  }
+
+  private subirFoto(file: File) {
+    Swal.fire({
+      title: 'Subiendo foto...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    this.authService.updateProfilePicture(file).subscribe({
+      next: (response) => {
+        this.cargarInformacionUsuario();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: 'La foto de perfil se actualizó correctamente',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#527F4B'
+        });
+      },
+      error: (error) => {
+        console.error('Error al actualizar la foto:', error);
+        Swal.fire({
+          icon: 'error',
+          title: '¡Error!',
+          text: 'No se pudo actualizar la foto de perfil',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#527F4B'
+        });
+      }
+    });
+  }
 }

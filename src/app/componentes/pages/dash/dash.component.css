@@ -15,14 +15,48 @@ p {
     object-fit: contain;
 }
 
-.usuario {
-    width: 150px;
+.contenedorUsuario {
     position: absolute;
-    display: flex;
     bottom: 0;
     left: 30px;
+    cursor: pointer;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.usuario {
+    width: 150px;
+    display: flex;
     border-radius: 20px;
     border: 5px solid white;
+    transition: filter 0.3s ease;
+}
+
+.overlay-usuario {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.overlay-usuario span {
+    font-size: 32px;
+    color: #527F4B;
+}
+
+.contenedorUsuario:hover .overlay-usuario {
+    opacity: 1;
+}
+
+.contenedorUsuario:hover .usuario {
+    filter: brightness(0.95);
 }
 
 .contenedorFondo {
@@ -201,15 +235,6 @@ p {
 .form-group textarea {
     min-height: 120px;
     resize: vertical;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 15px;
-    font-family: inherit;
-    line-height: 1.5;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s ease;
 }
 
 .form-group input:focus,
@@ -257,4 +282,60 @@ p {
 .btn-cancelar:active,
 .btn-guardar:active {
     transform: scale(0.98);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: 800px;
+  margin: 1.75rem auto;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 0.3rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-body {
+  padding: 1rem;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.cropper-container {
+  height: 400px;
+  width: 100%;
 }
