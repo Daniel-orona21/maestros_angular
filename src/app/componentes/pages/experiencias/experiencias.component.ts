@@ -1,17 +1,29 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ExperienciaService, Experiencia } from '../../../servicios/experiencia.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-experiencias',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    MatIconModule,
+    MatButtonModule
+  ],
   templateUrl: './experiencias.component.html',
   styleUrl: './experiencias.component.css'
 })
-export class ExperienciasComponent {
+export class ExperienciasComponent implements OnInit {
   mostrarModal = false;
-  experienciaSeleccionada: any = null;
+  experienciaSeleccionada: Experiencia | null = null;
+  experiencias: Experiencia[] = [];
+  cargando = true;
+  error: string | null = null;
   anioActual = new Date().getFullYear();
   meses = [
     { valor: 1, nombre: 'Enero' },
@@ -28,18 +40,48 @@ export class ExperienciasComponent {
     { valor: 12, nombre: 'Diciembre' }
   ];
 
-  abrirModal() {
+  constructor(private experienciaService: ExperienciaService) {}
+
+  ngOnInit() {
+    this.cargarExperiencias();
+  }
+
+  cargarExperiencias() {
+    this.cargando = true;
+    this.error = null;
+    this.experienciaService.obtenerExperiencias().subscribe({
+      next: (experiencias) => {
+        this.experiencias = experiencias;
+        this.cargando = false;
+      },
+      error: (error) => {
+        this.error = 'Error al cargar las experiencias';
+        this.cargando = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar las experiencias'
+        });
+      }
+    });
+  }
+
+  abrirModal(experiencia?: Experiencia) {
     this.mostrarModal = true;
-    this.experienciaSeleccionada = {
-      puesto: '',
-      empleador: '',
-      ciudad: '',
-      pais: '',
-      fecha_inicio_mes: new Date().getMonth() + 1,
-      fecha_inicio_anio: this.anioActual,
-      fecha_fin_mes: null,
-      fecha_fin_anio: null
-    };
+    if (experiencia) {
+      this.experienciaSeleccionada = { ...experiencia };
+    } else {
+      this.experienciaSeleccionada = {
+        puesto: '',
+        empleador: '',
+        ciudad: '',
+        pais: '',
+        fecha_inicio_mes: new Date().getMonth() + 1,
+        fecha_inicio_anio: this.anioActual,
+        fecha_fin_mes: null,
+        fecha_fin_anio: null
+      };
+    }
   }
 
   cerrarModal() {
@@ -47,8 +89,108 @@ export class ExperienciasComponent {
     this.experienciaSeleccionada = null;
   }
 
-  guardarExperiencia() {
-    // Aquí irá la lógica para guardar la experiencia
-    this.cerrarModal();
+  async guardarExperiencia(): Promise<void> {
+    if (!this.experienciaSeleccionada) return;
+
+    // Validación básica
+    if (!this.experienciaSeleccionada.puesto || 
+        !this.experienciaSeleccionada.empleador || 
+        !this.experienciaSeleccionada.ciudad || 
+        !this.experienciaSeleccionada.pais) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Por favor, completa todos los campos requeridos'
+      });
+      return;
+    }
+
+    this.cargando = true;
+    this.error = null;
+
+    try {
+      if (this.experienciaSeleccionada.id) {
+        // Actualizar experiencia existente
+        await this.experienciaService.actualizarExperiencia(
+          this.experienciaSeleccionada.id,
+          this.experienciaSeleccionada
+        ).toPromise();
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Actualizado!',
+          text: 'La experiencia se actualizó correctamente'
+        });
+      } else {
+        // Crear nueva experiencia
+        await this.experienciaService.agregarExperiencia(
+          this.experienciaSeleccionada
+        ).toPromise();
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Agregado!',
+          text: 'La experiencia se agregó correctamente'
+        });
+      }
+
+      this.cerrarModal();
+      this.cargarExperiencias();
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema al guardar la experiencia'
+      });
+    } finally {
+      this.cargando = false;
+    }
+  }
+
+  async eliminarExperiencia(id: number): Promise<void> {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Esta acción no se puede deshacer",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#527F4B',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await this.experienciaService.eliminarExperiencia(id).toPromise();
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Eliminado!',
+          text: 'La experiencia ha sido eliminada'
+        });
+        
+        this.cargarExperiencias();
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar la experiencia'
+        });
+      }
+    }
+  }
+
+  obtenerNombreMes(mes: number): string {
+    return this.meses.find(m => m.valor === mes)?.nombre || '';
+  }
+
+  formatearPeriodo(experiencia: Experiencia): string {
+    const inicio = `${this.obtenerNombreMes(experiencia.fecha_inicio_mes)} ${experiencia.fecha_inicio_anio}`;
+    
+    if (experiencia.fecha_fin_mes && experiencia.fecha_fin_anio) {
+      return `${inicio} - ${this.obtenerNombreMes(experiencia.fecha_fin_mes)} ${experiencia.fecha_fin_anio}`;
+    }
+    
+    return `${inicio} - Presente`;
   }
 }

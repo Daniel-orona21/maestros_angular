@@ -368,6 +368,188 @@ app.post('/update-profile-pic', upload.single('foto'), async (req, res) => {
   }
 });
 
+// 🟢 Obtener experiencias del usuario
+app.get('/experiencias', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+
+    const sql = `
+      SELECT * FROM experiencia 
+      WHERE usuario_id = ?
+      ORDER BY fecha_inicio_anio DESC, fecha_inicio_mes DESC`;
+
+    db.query(sql, [decoded.id], (err, results) => {
+      if (err) {
+        console.error('Error al obtener experiencias:', err);
+        return res.status(500).json({ error: 'Error en el servidor' });
+      }
+      res.json(results);
+    });
+  });
+});
+
+// 🟢 Agregar nueva experiencia
+app.post('/experiencias', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+
+    const { 
+      puesto, empleador, ciudad, pais,
+      fecha_inicio_mes, fecha_inicio_anio,
+      fecha_fin_mes, fecha_fin_anio
+    } = req.body;
+
+    // Validar campos requeridos
+    if (!puesto || !empleador || !ciudad || !pais || !fecha_inicio_mes || !fecha_inicio_anio) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+
+    const sql = `
+      INSERT INTO experiencia (
+        usuario_id, puesto, empleador, ciudad, pais,
+        fecha_inicio_mes, fecha_inicio_anio,
+        fecha_fin_mes, fecha_fin_anio
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    db.query(sql, [
+      decoded.id, puesto, empleador, ciudad, pais,
+      fecha_inicio_mes, fecha_inicio_anio,
+      fecha_fin_mes || null, fecha_fin_anio || null
+    ], (err, result) => {
+      if (err) {
+        console.error('Error al agregar experiencia:', err);
+        return res.status(500).json({ error: 'Error en el servidor' });
+      }
+      res.json({ 
+        message: 'Experiencia agregada correctamente',
+        id: result.insertId 
+      });
+    });
+  });
+});
+
+// 🔄 Actualizar experiencia
+app.put('/experiencias/:id', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  const experienciaId = req.params.id;
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+
+    const { 
+      puesto, empleador, ciudad, pais,
+      fecha_inicio_mes, fecha_inicio_anio,
+      fecha_fin_mes, fecha_fin_anio
+    } = req.body;
+
+    // Validar campos requeridos
+    if (!puesto || !empleador || !ciudad || !pais || !fecha_inicio_mes || !fecha_inicio_anio) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+
+    // Primero verificamos que la experiencia pertenezca al usuario
+    const checkSql = 'SELECT usuario_id FROM experiencia WHERE id = ?';
+    db.query(checkSql, [experienciaId], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Error en el servidor' });
+      }
+      
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Experiencia no encontrada' });
+      }
+
+      if (results[0].usuario_id !== decoded.id) {
+        return res.status(403).json({ error: 'No autorizado' });
+      }
+
+      // Si todo está bien, actualizamos
+      const updateSql = `
+        UPDATE experiencia 
+        SET puesto = ?, empleador = ?, ciudad = ?, pais = ?,
+            fecha_inicio_mes = ?, fecha_inicio_anio = ?,
+            fecha_fin_mes = ?, fecha_fin_anio = ?
+        WHERE id = ? AND usuario_id = ?`;
+
+      db.query(updateSql, [
+        puesto, empleador, ciudad, pais,
+        fecha_inicio_mes, fecha_inicio_anio,
+        fecha_fin_mes || null, fecha_fin_anio || null,
+        experienciaId, decoded.id
+      ], (err, result) => {
+        if (err) {
+          console.error('Error al actualizar experiencia:', err);
+          return res.status(500).json({ error: 'Error en el servidor' });
+        }
+        res.json({ message: 'Experiencia actualizada correctamente' });
+      });
+    });
+  });
+});
+
+// 🗑️ Eliminar experiencia
+app.delete('/experiencias/:id', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  const experienciaId = req.params.id;
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+
+    // Primero verificamos que la experiencia pertenezca al usuario
+    const checkSql = 'SELECT usuario_id FROM experiencia WHERE id = ?';
+    db.query(checkSql, [experienciaId], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Error en el servidor' });
+      }
+      
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Experiencia no encontrada' });
+      }
+
+      if (results[0].usuario_id !== decoded.id) {
+        return res.status(403).json({ error: 'No autorizado' });
+      }
+
+      // Si todo está bien, eliminamos
+      const deleteSql = 'DELETE FROM experiencia WHERE id = ? AND usuario_id = ?';
+      db.query(deleteSql, [experienciaId, decoded.id], (err, result) => {
+        if (err) {
+          console.error('Error al eliminar experiencia:', err);
+          return res.status(500).json({ error: 'Error en el servidor' });
+        }
+        res.json({ message: 'Experiencia eliminada correctamente' });
+      });
+    });
+  });
+});
+
 // Servidor corriendo
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);

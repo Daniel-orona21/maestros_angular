@@ -6,6 +6,56 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Estados y mensajes */
+.estado-carga,
+.mensaje-error,
+.sin-experiencias {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.estado-carga span,
+.mensaje-error span,
+.sin-experiencias span {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.estado-carga p,
+.mensaje-error p,
+.sin-experiencias p {
+    margin: 8px 0;
+    font-size: 18px;
+}
+
+.sin-experiencias .subtexto {
+    font-size: 14px;
+    color: #888;
+}
+
+.mensaje-error {
+    color: #dc3545;
+}
+
+.mensaje-error span {
+    color: #dc3545;
+}
+
+@keyframes girar {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.girando {
+    animation: girar 1s linear infinite;
+}
+
 .encabezado {
     display: flex;
     justify-content: space-between;
@@ -70,7 +120,7 @@
 .card-header h3 {
     margin: 0;
     color: #333;
-    font-size: 18px;
+    font-size: 22px;
 }
 
 .card-content {
@@ -78,7 +128,7 @@
 }
 
 .puesto {
-    font-weight: 500;
+    font-weight: 600;
     color: #444;
     margin-bottom: 5px;
 }
@@ -86,6 +136,7 @@
 .ubicacion {
     color: #666;
     margin-bottom: 5px;
+    font-style: italic;
 }
 
 .periodo {
@@ -228,15 +279,20 @@
     color: white;
 }
 
+.btn-guardar:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
 .btn-cancelar:hover {
     background-color: #e5e5e5;
 }
 
-.btn-guardar:hover {
+.btn-guardar:hover:not(:disabled) {
     background-color: #3e6038;
 }
 
 .btn-cancelar:active,
-.btn-guardar:active {
+.btn-guardar:active:not(:disabled) {
     transform: scale(0.98);
 }

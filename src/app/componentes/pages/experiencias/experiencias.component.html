@@ -7,24 +7,42 @@
         </button>
     </div>
 
+    <!-- Estado de carga -->
+    <div class="estado-carga" *ngIf="cargando">
+        <span class="material-symbols-outlined girando">progress_activity</span>
+        <p>Cargando experiencias...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="mensaje-error" *ngIf="error">
+        <span class="material-symbols-outlined">error</span>
+        <p>{{ error }}</p>
+    </div>
+
+    <!-- Mensaje cuando no hay experiencias -->
+    <div class="sin-experiencias" *ngIf="!cargando && !error && experiencias.length === 0">
+        <span class="material-symbols-outlined">work_off</span>
+        <p>Aún no has agregado ninguna experiencia profesional</p>
+        <p class="subtexto">Haz clic en "Agregar Experiencia" para comenzar</p>
+    </div>
+
     <!-- Lista de Experiencias -->
-    <div class="experiencias-grid">
-        <!-- Ejemplo de tarjeta de experiencia -->
-        <div class="experiencia-card">
+    <div class="experiencias-grid" *ngIf="!cargando && !error && experiencias.length > 0">
+        <div class="experiencia-card" *ngFor="let experiencia of experiencias">
             <div class="card-header">
                 <span class="material-symbols-outlined">work</span>
-                <h3>Empresa Ejemplo</h3>
+                <h3>{{experiencia.empleador}}</h3>
             </div>
             <div class="card-content">
-                <p class="puesto">Desarrollador Senior</p>
-                <p class="ubicacion">Ciudad, País</p>
-                <p class="periodo">Enero 2023 - Presente</p>
+                <p class="puesto">{{experiencia.puesto}}</p>
+                <p class="ubicacion">{{experiencia.ciudad}}, {{experiencia.pais}}</p>
+                <p class="periodo">{{formatearPeriodo(experiencia)}}</p>
             </div>
             <div class="card-actions">
-                <button class="btn-editar">
+                <button class="btn-editar" (click)="abrirModal(experiencia)">
                     <span class="material-symbols-outlined">edit</span>
                 </button>
-                <button class="btn-eliminar">
+                <button class="btn-eliminar" (click)="eliminarExperiencia(experiencia.id!)">
                     <span class="material-symbols-outlined">delete</span>
                 </button>
             </div>
@@ -40,25 +58,25 @@
         <div class="modal-body">
             <div class="form-group">
                 <label for="puesto">Puesto</label>
-                <input type="text" id="puesto" [(ngModel)]="experienciaSeleccionada.puesto" 
+                <input type="text" id="puesto" [(ngModel)]="experienciaSeleccionada!.puesto" 
                        placeholder="Ej: Profesor de Matemáticas">
             </div>
 
             <div class="form-group">
                 <label for="empleador">Empleador</label>
-                <input type="text" id="empleador" [(ngModel)]="experienciaSeleccionada.empleador" 
+                <input type="text" id="empleador" [(ngModel)]="experienciaSeleccionada!.empleador" 
                        placeholder="Ej: Universidad Nacional">
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="ciudad">Ciudad</label>
-                    <input type="text" id="ciudad" [(ngModel)]="experienciaSeleccionada.ciudad" 
+                    <input type="text" id="ciudad" [(ngModel)]="experienciaSeleccionada!.ciudad" 
                            placeholder="Ej: Ciudad de México">
                 </div>
                 <div class="form-group">
                     <label for="pais">País</label>
-                    <input type="text" id="pais" [(ngModel)]="experienciaSeleccionada.pais" 
+                    <input type="text" id="pais" [(ngModel)]="experienciaSeleccionada!.pais" 
                            placeholder="Ej: México">
                 </div>
             </div>
@@ -67,12 +85,12 @@
                 <div class="form-group">
                     <label>Fecha de Inicio</label>
                     <div class="fecha-inputs">
-                        <select [(ngModel)]="experienciaSeleccionada.fecha_inicio_mes">
+                        <select [(ngModel)]="experienciaSeleccionada!.fecha_inicio_mes">
                             <option *ngFor="let mes of meses" [value]="mes.valor">
                                 {{mes.nombre}}
                             </option>
                         </select>
-                        <input type="number" [(ngModel)]="experienciaSeleccionada.fecha_inicio_anio" 
+                        <input type="number" [(ngModel)]="experienciaSeleccionada!.fecha_inicio_anio" 
                                min="1950" [max]="anioActual">
                     </div>
                 </div>
@@ -80,13 +98,13 @@
                 <div class="form-group">
                     <label>Fecha de Fin</label>
                     <div class="fecha-inputs">
-                        <select [(ngModel)]="experienciaSeleccionada.fecha_fin_mes">
+                        <select [(ngModel)]="experienciaSeleccionada!.fecha_fin_mes">
                             <option [value]="null">Mes</option>
                             <option *ngFor="let mes of meses" [value]="mes.valor">
                                 {{mes.nombre}}
                             </option>
                         </select>
-                        <input type="number" [(ngModel)]="experienciaSeleccionada.fecha_fin_anio" 
+                        <input type="number" [(ngModel)]="experienciaSeleccionada!.fecha_fin_anio" 
                                min="1950" [max]="anioActual"
                                placeholder="Año">
                     </div>
@@ -97,7 +115,9 @@
 
         <div class="modal-footer">
             <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
-            <button class="btn-guardar" (click)="guardarExperiencia()">Guardar</button>
+            <button class="btn-guardar" (click)="guardarExperiencia()" [disabled]="cargando">
+                {{ cargando ? 'Guardando...' : 'Guardar' }}
+            </button>
         </div>
     </div>
 </div>
