@@ -1,1 +1,103 @@
-<p>experiencias works!</p>
+<div class="carta">
+    <div class="encabezado">
+        <h1>Experiencia Profesional</h1>
+        <button class="btn-agregar" (click)="abrirModal()">
+            <span class="material-symbols-outlined">add</span>
+            Agregar Experiencia
+        </button>
+    </div>
+
+    <!-- Lista de Experiencias -->
+    <div class="experiencias-grid">
+        <!-- Ejemplo de tarjeta de experiencia -->
+        <div class="experiencia-card">
+            <div class="card-header">
+                <span class="material-symbols-outlined">work</span>
+                <h3>Empresa Ejemplo</h3>
+            </div>
+            <div class="card-content">
+                <p class="puesto">Desarrollador Senior</p>
+                <p class="ubicacion">Ciudad, País</p>
+                <p class="periodo">Enero 2023 - Presente</p>
+            </div>
+            <div class="card-actions">
+                <button class="btn-editar">
+                    <span class="material-symbols-outlined">edit</span>
+                </button>
+                <button class="btn-eliminar">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar/editar experiencia -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>{{ experienciaSeleccionada?.id ? 'Editar' : 'Agregar' }} Experiencia</h2>
+        
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="puesto">Puesto</label>
+                <input type="text" id="puesto" [(ngModel)]="experienciaSeleccionada.puesto" 
+                       placeholder="Ej: Profesor de Matemáticas">
+            </div>
+
+            <div class="form-group">
+                <label for="empleador">Empleador</label>
+                <input type="text" id="empleador" [(ngModel)]="experienciaSeleccionada.empleador" 
+                       placeholder="Ej: Universidad Nacional">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="ciudad">Ciudad</label>
+                    <input type="text" id="ciudad" [(ngModel)]="experienciaSeleccionada.ciudad" 
+                           placeholder="Ej: Ciudad de México">
+                </div>
+                <div class="form-group">
+                    <label for="pais">País</label>
+                    <input type="text" id="pais" [(ngModel)]="experienciaSeleccionada.pais" 
+                           placeholder="Ej: México">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha de Inicio</label>
+                    <div class="fecha-inputs">
+                        <select [(ngModel)]="experienciaSeleccionada.fecha_inicio_mes">
+                            <option *ngFor="let mes of meses" [value]="mes.valor">
+                                {{mes.nombre}}
+                            </option>
+                        </select>
+                        <input type="number" [(ngModel)]="experienciaSeleccionada.fecha_inicio_anio" 
+                               min="1950" [max]="anioActual">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de Fin</label>
+                    <div class="fecha-inputs">
+                        <select [(ngModel)]="experienciaSeleccionada.fecha_fin_mes">
+                            <option [value]="null">Mes</option>
+                            <option *ngFor="let mes of meses" [value]="mes.valor">
+                                {{mes.nombre}}
+                            </option>
+                        </select>
+                        <input type="number" [(ngModel)]="experienciaSeleccionada.fecha_fin_anio" 
+                               min="1950" [max]="anioActual"
+                               placeholder="Año">
+                    </div>
+                    <small class="texto-ayuda">Deja en blanco si es tu trabajo actual</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-guardar" (click)="guardarExperiencia()">Guardar</button>
+        </div>
+    </div>
+</div>
