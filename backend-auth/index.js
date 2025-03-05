@@ -693,6 +693,140 @@ app.delete('/educacion/:id', verificarToken, (req, res) => {
     );
 });
 
+// Endpoints para habilidades
+app.get('/habilidades', verificarToken, (req, res) => {
+    db.query(
+        'SELECT * FROM habilidades WHERE usuario_id = ?',
+        [req.usuario.id],
+        (err, results) => {
+            if (err) {
+                console.error('Error al obtener habilidades:', err);
+                return res.status(500).json({ mensaje: 'Error al obtener las habilidades' });
+            }
+            res.json(results);
+        }
+    );
+});
+
+app.post('/habilidades', verificarToken, (req, res) => {
+    const { habilidades } = req.body;
+
+    if (!habilidades || !Array.isArray(habilidades) || habilidades.length === 0) {
+        return res.status(400).json({ mensaje: 'Debe proporcionar al menos una habilidad' });
+    }
+
+    // Usamos una transacción para asegurar que todas las habilidades se guarden
+    db.beginTransaction(err => {
+        if (err) {
+            console.error('Error al iniciar transacción:', err);
+            return res.status(500).json({ mensaje: 'Error al guardar las habilidades' });
+        }
+
+        const insertPromises = habilidades.map(descripcion => {
+            return new Promise((resolve, reject) => {
+                db.query(
+                    'INSERT INTO habilidades (usuario_id, descripcion) VALUES (?, ?)',
+                    [req.usuario.id, descripcion],
+                    (err, result) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        resolve(result);
+                    }
+                );
+            });
+        });
+
+        Promise.all(insertPromises)
+            .then(() => {
+                db.commit(err => {
+                    if (err) {
+                        console.error('Error al hacer commit:', err);
+                        return db.rollback(() => {
+                            res.status(500).json({ mensaje: 'Error al guardar las habilidades' });
+                        });
+                    }
+                    res.status(201).json({ mensaje: 'Habilidades guardadas correctamente' });
+                });
+            })
+            .catch(err => {
+                console.error('Error al insertar habilidades:', err);
+                db.rollback(() => {
+                    res.status(500).json({ mensaje: 'Error al guardar las habilidades' });
+                });
+            });
+    });
+});
+
+app.put('/habilidades/:id', verificarToken, (req, res) => {
+    const { id } = req.params;
+    const { descripcion } = req.body;
+
+    if (!descripcion) {
+        return res.status(400).json({ mensaje: 'La descripción es requerida' });
+    }
+
+    // Verificar que la habilidad pertenece al usuario
+    db.query(
+        'SELECT * FROM habilidades WHERE id = ? AND usuario_id = ?',
+        [id, req.usuario.id],
+        (err, results) => {
+            if (err) {
+                console.error('Error al verificar habilidad:', err);
+                return res.status(500).json({ mensaje: 'Error al verificar la habilidad' });
+            }
+
+            if (results.length === 0) {
+                return res.status(404).json({ mensaje: 'Habilidad no encontrada o no autorizada' });
+            }
+
+            db.query(
+                'UPDATE habilidades SET descripcion = ? WHERE id = ? AND usuario_id = ?',
+                [descripcion, id, req.usuario.id],
+                (err) => {
+                    if (err) {
+                        console.error('Error al actualizar habilidad:', err);
+                        return res.status(500).json({ mensaje: 'Error al actualizar la habilidad' });
+                    }
+                    res.json({ mensaje: 'Habilidad actualizada correctamente' });
+                }
+            );
+        }
+    );
+});
+
+app.delete('/habilidades/:id', verificarToken, (req, res) => {
+    const { id } = req.params;
+
+    // Verificar que la habilidad pertenece al usuario
+    db.query(
+        'SELECT * FROM habilidades WHERE id = ? AND usuario_id = ?',
+        [id, req.usuario.id],
+        (err, results) => {
+            if (err) {
+                console.error('Error al verificar habilidad:', err);
+                return res.status(500).json({ mensaje: 'Error al verificar la habilidad' });
+            }
+
+            if (results.length === 0) {
+                return res.status(404).json({ mensaje: 'Habilidad no encontrada o no autorizada' });
+            }
+
+            db.query(
+                'DELETE FROM habilidades WHERE id = ? AND usuario_id = ?',
+                [id, req.usuario.id],
+                (err) => {
+                    if (err) {
+                        console.error('Error al eliminar habilidad:', err);
+                        return res.status(500).json({ mensaje: 'Error al eliminar la habilidad' });
+                    }
+                    res.json({ mensaje: 'Habilidad eliminada correctamente' });
+                }
+            );
+        }
+    );
+});
+
 // Servidor corriendo
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);

@@ -1,1 +1,88 @@
-<p>habilidades works!</p>
+<div class="carta">
+    <div class="encabezado">
+        <h1>Habilidades</h1>
+        <div class="acciones">
+            <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+                <span class="material-symbols-outlined">edit</span>
+                Editar
+            </button>
+            <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+                <span class="material-symbols-outlined">delete</span>
+                Eliminar
+            </button>
+            <button class="btn-agregar" (click)="abrirModal()">
+                <span class="material-symbols-outlined">add</span>
+                Agregar Habilidades
+            </button>
+        </div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div class="estado-carga" *ngIf="cargando">
+        <span class="material-symbols-outlined girando">progress_activity</span>
+        <p>Cargando habilidades...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="mensaje-error" *ngIf="error">
+        <span class="material-symbols-outlined">error</span>
+        <p>{{ error }}</p>
+    </div>
+
+    <!-- Mensaje cuando no hay habilidades -->
+    <div class="sin-experiencias" *ngIf="!cargando && !error && habilidades.length === 0">
+        <span class="material-symbols-outlined">psychology</span>
+        <p>Aún no has agregado ninguna habilidad</p>
+        <p class="subtexto">Haz clic en "Agregar Habilidades" para comenzar</p>
+    </div>
+
+    <!-- Lista de Habilidades -->
+    <div class="experiencias-grid" *ngIf="!cargando && !error && habilidades.length > 0">
+        <div class="experiencia-card" *ngFor="let habilidad of habilidades"
+             [class.modo-edicion]="modoEdicion"
+             [class.modo-eliminacion]="modoEliminacion"
+             (click)="handleCardClick(habilidad)">
+            <div class="card-overlay" *ngIf="modoEdicion || modoEliminacion">
+                <span class="material-symbols-outlined" *ngIf="modoEdicion">edit</span>
+                <span class="material-symbols-outlined" *ngIf="modoEliminacion">delete</span>
+            </div>
+            <div class="card-header">
+                <span class="material-symbols-outlined">psychology</span>
+                <h3>{{habilidad.descripcion}}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar habilidades -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>Agregar Habilidades</h2>
+        
+        <div class="modal-body">
+            <div class="form-group" *ngFor="let habilidad of nuevasHabilidades; let i = index">
+                <div class="habilidad-input">
+                    <input type="text" 
+                           [formControl]="nuevasHabilidades[i]"
+                           placeholder="Describe tu habilidad">
+                    <button class="btn-eliminar" *ngIf="nuevasHabilidades.length > 1"
+                            (click)="eliminarCampoHabilidad(i)">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn-agregar-campo" (click)="agregarCampoHabilidad()">
+                <span class="material-symbols-outlined">add</span>
+                Agregar otra habilidad
+            </button>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-guardar" (click)="guardarHabilidades()" [disabled]="cargando">
+                {{ cargando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>
