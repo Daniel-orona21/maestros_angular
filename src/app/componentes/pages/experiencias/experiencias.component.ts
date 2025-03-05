@@ -24,6 +24,8 @@ export class ExperienciasComponent implements OnInit {
   experiencias: Experiencia[] = [];
   cargando = true;
   error: string | null = null;
+  modoEdicion = false;
+  modoEliminacion = false;
   anioActual = new Date().getFullYear();
   meses = [
     { valor: 1, nombre: 'Enero' },
@@ -44,6 +46,30 @@ export class ExperienciasComponent implements OnInit {
 
   ngOnInit() {
     this.cargarExperiencias();
+  }
+
+  toggleModoEdicion() {
+    this.modoEdicion = !this.modoEdicion;
+    if (this.modoEdicion) {
+      this.modoEliminacion = false;
+    }
+  }
+
+  toggleModoEliminacion() {
+    this.modoEliminacion = !this.modoEliminacion;
+    if (this.modoEliminacion) {
+      this.modoEdicion = false;
+    }
+  }
+
+  handleCardClick(experiencia: Experiencia) {
+    if (this.modoEdicion) {
+      this.abrirModal(experiencia);
+      this.modoEdicion = false;
+    } else if (this.modoEliminacion) {
+      this.eliminarExperiencia(experiencia.id!);
+      this.modoEliminacion = false;
+    }
   }
 
   cargarExperiencias() {
@@ -110,7 +136,6 @@ export class ExperienciasComponent implements OnInit {
 
     try {
       if (this.experienciaSeleccionada.id) {
-        // Actualizar experiencia existente
         await this.experienciaService.actualizarExperiencia(
           this.experienciaSeleccionada.id,
           this.experienciaSeleccionada
@@ -122,7 +147,6 @@ export class ExperienciasComponent implements OnInit {
           text: 'La experiencia se actualizó correctamente'
         });
       } else {
-        // Crear nueva experiencia
         await this.experienciaService.agregarExperiencia(
           this.experienciaSeleccionada
         ).toPromise();

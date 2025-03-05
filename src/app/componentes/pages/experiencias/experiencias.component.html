@@ -1,10 +1,20 @@
 <div class="carta">
     <div class="encabezado">
         <h1>Experiencia Profesional</h1>
-        <button class="btn-agregar" (click)="abrirModal()">
-            <span class="material-symbols-outlined">add</span>
-            Agregar Experiencia
-        </button>
+        <div class="acciones">
+            <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+                <span class="material-symbols-outlined">edit</span>
+                Editar
+            </button>
+            <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+                <span class="material-symbols-outlined">delete</span>
+                Eliminar
+            </button>
+            <button class="btn-agregar" (click)="abrirModal()">
+                <span class="material-symbols-outlined">add</span>
+                Agregar Experiencia
+            </button>
+        </div>
     </div>
 
     <!-- Estado de carga -->
@@ -28,7 +38,14 @@
 
     <!-- Lista de Experiencias -->
     <div class="experiencias-grid" *ngIf="!cargando && !error && experiencias.length > 0">
-        <div class="experiencia-card" *ngFor="let experiencia of experiencias">
+        <div class="experiencia-card" *ngFor="let experiencia of experiencias"
+             [class.modo-edicion]="modoEdicion"
+             [class.modo-eliminacion]="modoEliminacion"
+             (click)="handleCardClick(experiencia)">
+            <div class="card-overlay" *ngIf="modoEdicion || modoEliminacion">
+                <span class="material-symbols-outlined" *ngIf="modoEdicion">edit</span>
+                <span class="material-symbols-outlined" *ngIf="modoEliminacion">delete</span>
+            </div>
             <div class="card-header">
                 <span class="material-symbols-outlined">work</span>
                 <h3>{{experiencia.empleador}}</h3>
@@ -37,14 +54,6 @@
                 <p class="puesto">{{experiencia.puesto}}</p>
                 <p class="ubicacion">{{experiencia.ciudad}}, {{experiencia.pais}}</p>
                 <p class="periodo">{{formatearPeriodo(experiencia)}}</p>
-            </div>
-            <div class="card-actions">
-                <button class="btn-editar" (click)="abrirModal(experiencia)">
-                    <span class="material-symbols-outlined">edit</span>
-                </button>
-                <button class="btn-eliminar" (click)="eliminarExperiencia(experiencia.id!)">
-                    <span class="material-symbols-outlined">delete</span>
-                </button>
             </div>
         </div>
     </div>
