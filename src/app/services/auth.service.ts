@@ -2,6 +2,18 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface Usuario {
+  id: number;
+  nombre: string;
+  correo: string;
+  especialidad: string;
+  foto_perfil: string;
+  curriculum: string;
+  sobre_mi: string;
+  creado_en: string;
+  origen: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -37,5 +49,17 @@ export class AuthService {
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get(`${this.apiUrl}/verify-token`, { headers });
+  }
+
+  getUserInfo(): Observable<Usuario> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return new Observable(observer => {
+        observer.error({ error: 'Token no encontrado' });
+      });
+    }
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<Usuario>(`${this.apiUrl}/user-info`, { headers });
   }
 }

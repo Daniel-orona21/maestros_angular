@@ -1,27 +1,36 @@
-<div class="carta">
+<div class="carta" *ngIf="!cargando && !error">
     <div class="contenedorFondo">
         <img class="fondo" src="assets/Background_image.png" alt="fondo">
-        <img class="usuario" src="assets/usuario.png" alt="usuario">
+        <img class="usuario" [src]="usuario?.foto_perfil || 'assets/usuario.png'" [alt]="usuario?.nombre || 'Usuario'">
     </div>
 
     <div class="detalles">
         <div class="info">
-            <p class="nombre">Dagoberto Fiscál</p>
-            <p class="especialidad">Programación Orientada a Objetos</p>
-            <p class="origen">Durango, Dgo</p>
+            <p class="nombre">{{ usuario?.nombre || 'Sin nombre registrado' }}</p>
+            <p class="especialidad">{{ usuario?.especialidad || 'Especialidad no registrada' }}</p>
+            <p class="origen">{{ usuario?.origen || 'Origen no registrado' }}</p>
         </div>
         <div class="botones">
-            <button class="edit"><span class="material-symbols-outlined">edit</span></button>
+            <button class="edit"><span class="material-symbols-outlined">{{ usuario?.nombre || usuario?.especialidad || usuario?.origen ? 'edit' : 'add' }}</span></button>
         </div>
     </div>
 
     <div class="sobreMi">
-            <button class="edit editA"><span class="material-symbols-outlined">edit</span></button>
+        <button class="edit editA"><span class="material-symbols-outlined">{{ usuario?.sobre_mi ? 'edit' : 'add' }}</span></button>
         <p class="sobreMiTitulo">Sobre Mi</p>
         <p class="infoSobreMi">
-            Soy profesor en la Universidad Tecnológica de Durango, especializado en Programación Orientada a Objetos.  
-            Me apasiona la enseñanza y disfruto ayudar a mis estudiantes a desarrollar su lógica de programación y habilidades en desarrollo de software.  
-            Cuento con experiencia en el ámbito académico y profesional, y siempre busco combinar la teoría con la práctica para preparar a mis alumnos para los desafíos del mundo tecnológico.
+            {{ usuario?.sobre_mi || 'No hay información registrada sobre el profesor.' }}
         </p>
     </div>
+</div>
+
+<!-- Estado de carga -->
+<div class="estado-carga" *ngIf="cargando">
+    <p>Cargando información...</p>
+</div>
+
+<!-- Estado de error -->
+<div class="estado-error" *ngIf="error">
+    <p>Ha ocurrido un error al cargar la información.</p>
+    <button (click)="cargarInformacionUsuario()">Reintentar</button>
 </div>

@@ -68,7 +68,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// �� Login de usuario (POST)
+// 🟢 Login de usuario (POST)
 app.post('/login', (req, res) => {
     console.log('Datos recibidos en login:', req.body); // ✅ Verifica qué datos llegan
   
@@ -195,6 +195,40 @@ app.get('/verify-token', (req, res) => {
       return res.status(401).json({ error: 'Token inválido o expirado' });
     }
     res.json({ message: 'Token válido', usuario: decoded });
+  });
+});
+
+// 🔍 Obtener información del usuario
+app.get('/user-info', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+
+    const sql = `
+      SELECT id, nombre, correo, especialidad, foto_perfil, curriculum, sobre_mi, creado_en, origen 
+      FROM usuarios 
+      WHERE id = ?
+    `;
+
+    db.query(sql, [decoded.id], (err, results) => {
+      if (err) {
+        console.error('Error al obtener información del usuario:', err);
+        return res.status(500).json({ error: 'Error en el servidor' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+
+      res.json(results[0]);
+    });
   });
 });
 
