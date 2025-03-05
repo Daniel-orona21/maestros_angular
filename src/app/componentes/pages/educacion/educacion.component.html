@@ -1,66 +1,135 @@
-<head>
-    <!-- Enlace para importar Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  </head>
-  <div class="educacion-container">
-    <div class="profile-card">
-      <div class="profile-image-container">
-        <img class="profile-image" src="assets/usuario.png" alt="Foto de perfil">
-        <button class="camera-icon">
-          <span class="material-icons">camera_alt</span>
-        </button>
-      </div>
-      
-      <div class="profile-info">
-        <h2>Dagoberto Fiscal</h2>
-        <p class="specialty">Programación Orientada a Objetos</p>
-        <p class="location"><em>Durango, Dgo</em></p>
-        <button class="edit-icon">
-          <span class="material-icons">edit</span>
-        </button>
-      </div>
-  
-      <div class="about-me">
-        <!-- Educación Superior -->
-        <div class="education-box">
-          <img src="assets/logoITD.png" alt="Logo" class="about-me-logo">
-          <div class="about-me-text">
-            <h3>
-              Educación Superior
-              <button class="edit-button">
-                <span class="material-icons">edit</span>
-              </button>
-            </h3>
-            <p>
-              <b>Ingeniería en sistemas</b> 
-              <br>
-              Clases de tiempo completo<br>
-              Feb 2017 – May 2020. 3 yr 4 mos<br>
-              Blvd. Felipe Pescador 1830, Nueva Vizcaya, MEX
-            </p>
-          </div>
+<div class="carta">
+    <div class="encabezado">
+        <h1>Educación</h1>
+        <div class="acciones">
+            <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+                <span class="material-symbols-outlined">edit</span>
+                Editar
+            </button>
+            <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+                <span class="material-symbols-outlined">delete</span>
+                Eliminar
+            </button>
+            <button class="btn-agregar" (click)="abrirModal()">
+                <span class="material-symbols-outlined">add</span>
+                Agregar Educación
+            </button>
         </div>
-  
-        <!-- Educación Media Superior -->
-        <div class="education-box">
-          <img src="assets/110.png" alt="Logo" class="education-logo">
-          <div class="education-text">
-            <h3>
-              Educación Media Superior
-              <button class="edit-button">
-                <span class="material-icons">edit</span>
-              </button>
-            </h3>
-            <p>
-              <b>Especialidad Ofimática</b> 
-              <br>
-              Clases de tiempo completo<br>
-              Ago 2014 – Feb 2017. 3 yr 4 mos<br>
-              Av Mártires de Sonora 221, San Jorge, MEX
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-  
+
+    <!-- Estado de carga -->
+    <div class="estado-carga" *ngIf="cargando">
+        <span class="material-symbols-outlined girando">progress_activity</span>
+        <p>Cargando información educativa...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="mensaje-error" *ngIf="error">
+        <span class="material-symbols-outlined">error</span>
+        <p>{{ error }}</p>
+    </div>
+
+    <!-- Mensaje cuando no hay educación -->
+    <div class="sin-experiencias" *ngIf="!cargando && !error && educaciones.length === 0">
+        <span class="material-symbols-outlined">school</span>
+        <p>Aún no has agregado ninguna información educativa</p>
+        <p class="subtexto">Haz clic en "Agregar Educación" para comenzar</p>
+    </div>
+
+    <!-- Lista de Educación -->
+    <div class="experiencias-grid" *ngIf="!cargando && !error && educaciones.length > 0">
+        <div class="experiencia-card" *ngFor="let educacion of educaciones"
+             [class.modo-edicion]="modoEdicion"
+             [class.modo-eliminacion]="modoEliminacion"
+             (click)="handleCardClick(educacion)">
+            <div class="card-overlay" *ngIf="modoEdicion || modoEliminacion">
+                <span class="material-symbols-outlined" *ngIf="modoEdicion">edit</span>
+                <span class="material-symbols-outlined" *ngIf="modoEliminacion">delete</span>
+            </div>
+            <div class="card-header">
+                <span class="material-symbols-outlined">school</span>
+                <h3>{{educacion.institucion}}</h3>
+            </div>
+            <div class="card-content">
+                <div class="area">
+                  <p class="puesto">{{educacion.titulo}}</p>
+                  <p class="separador">-</p>
+                <p class="especialidad" *ngIf="educacion.especialidad">{{educacion.especialidad}}</p>
+                </div>
+                <p class="ubicacion">{{educacion.ciudad}}</p>
+                <p class="periodo">{{formatearPeriodo(educacion)}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar/editar educación -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>{{ educacionSeleccionada?.id ? 'Editar' : 'Agregar' }} Educación</h2>
+        
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="institucion">Institución</label>
+                <input type="text" id="institucion" [(ngModel)]="educacionSeleccionada!.institucion" 
+                       placeholder="Ej: Universidad Nacional Autónoma de México">
+            </div>
+
+            <div class="form-group">
+                <label for="titulo">Título</label>
+                <input type="text" id="titulo" [(ngModel)]="educacionSeleccionada!.titulo" 
+                       placeholder="Ej: Licenciatura en Educación">
+            </div>
+
+            <div class="form-group">
+                <label for="especialidad">Especialidad (opcional)</label>
+                <input type="text" id="especialidad" [(ngModel)]="educacionSeleccionada!.especialidad" 
+                       placeholder="Ej: Matemáticas">
+            </div>
+
+            <div class="form-group">
+                <label for="ciudad">Ciudad</label>
+                <input type="text" id="ciudad" [(ngModel)]="educacionSeleccionada!.ciudad" 
+                       placeholder="Ej: Ciudad de México">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha de Inicio</label>
+                    <div class="fecha-inputs">
+                        <select [(ngModel)]="educacionSeleccionada!.mes_inicio">
+                            <option *ngFor="let mes of meses" [value]="mes.valor">
+                                {{mes.nombre}}
+                            </option>
+                        </select>
+                        <input type="number" [(ngModel)]="educacionSeleccionada!.ano_inicio" 
+                               min="1950" [max]="anioActual">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha de Fin</label>
+                    <div class="fecha-inputs">
+                        <select [(ngModel)]="educacionSeleccionada!.mes_fin">
+                            <option [value]="null">Mes</option>
+                            <option *ngFor="let mes of meses" [value]="mes.valor">
+                                {{mes.nombre}}
+                            </option>
+                        </select>
+                        <input type="number" [(ngModel)]="educacionSeleccionada!.ano_fin" 
+                               min="1950" [max]="anioActual"
+                               placeholder="Año">
+                    </div>
+                    <small class="texto-ayuda">Deja en blanco si aún estás estudiando</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-guardar" (click)="guardarEducacion()" [disabled]="cargando">
+                {{ cargando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>

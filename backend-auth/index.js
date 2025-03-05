@@ -15,6 +15,23 @@ const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 
+// Middleware para verificar el token JWT
+const verificarToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+    req.usuario = decoded;
+    next();
+  });
+};
+
 // Asegurar que el directorio de uploads existe
 const uploadDir = path.join(__dirname, 'uploads/profile-pics');
 if (!fs.existsSync(uploadDir)) {
@@ -548,6 +565,132 @@ app.delete('/experiencias/:id', (req, res) => {
       });
     });
   });
+});
+
+// Endpoints para educación
+app.get('/educacion', verificarToken, (req, res) => {
+    db.query(
+        'SELECT * FROM educacion WHERE usuario_id = ? ORDER BY ano_inicio DESC, mes_inicio DESC',
+        [req.usuario.id],
+        (err, results) => {
+            if (err) {
+                console.error('Error al obtener educación:', err);
+                return res.status(500).json({ mensaje: 'Error al obtener la educación' });
+            }
+            res.json(results);
+        }
+    );
+});
+
+app.post('/educacion', verificarToken, (req, res) => {
+    const { institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin } = req.body;
+
+    if (!institucion || !titulo || !especialidad || !ciudad || !mes_inicio || !ano_inicio) {
+        return res.status(400).json({ mensaje: 'Todos los campos son requeridos excepto la fecha de fin' });
+    }
+
+    db.query(
+        'INSERT INTO educacion (usuario_id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [req.usuario.id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin],
+        (err, result) => {
+            if (err) {
+                console.error('Error al agregar educación:', err);
+                return res.status(500).json({ mensaje: 'Error al agregar la educación' });
+            }
+
+            db.query(
+                'SELECT * FROM educacion WHERE id = ?',
+                [result.insertId],
+                (err, results) => {
+                    if (err) {
+                        console.error('Error al obtener la educación insertada:', err);
+                        return res.status(500).json({ mensaje: 'Error al obtener la educación insertada' });
+                    }
+                    res.status(201).json(results[0]);
+                }
+            );
+        }
+    );
+});
+
+app.put('/educacion/:id', verificarToken, (req, res) => {
+    const { id } = req.params;
+    const { institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin } = req.body;
+
+    if (!institucion || !titulo || !especialidad || !ciudad || !mes_inicio || !ano_inicio) {
+        return res.status(400).json({ mensaje: 'Todos los campos son requeridos excepto la fecha de fin' });
+    }
+
+    // Verificar que la educación pertenece al usuario
+    db.query(
+        'SELECT * FROM educacion WHERE id = ? AND usuario_id = ?',
+        [id, req.usuario.id],
+        (err, results) => {
+            if (err) {
+                console.error('Error al verificar educación:', err);
+                return res.status(500).json({ mensaje: 'Error al verificar la educación' });
+            }
+
+            if (results.length === 0) {
+                return res.status(404).json({ mensaje: 'Educación no encontrada o no autorizada' });
+            }
+
+            db.query(
+                'UPDATE educacion SET institucion = ?, titulo = ?, especialidad = ?, ciudad = ?, mes_inicio = ?, ano_inicio = ?, mes_fin = ?, ano_fin = ? WHERE id = ? AND usuario_id = ?',
+                [institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin, id, req.usuario.id],
+                (err) => {
+                    if (err) {
+                        console.error('Error al actualizar educación:', err);
+                        return res.status(500).json({ mensaje: 'Error al actualizar la educación' });
+                    }
+
+                    db.query(
+                        'SELECT * FROM educacion WHERE id = ?',
+                        [id],
+                        (err, results) => {
+                            if (err) {
+                                console.error('Error al obtener la educación actualizada:', err);
+                                return res.status(500).json({ mensaje: 'Error al obtener la educación actualizada' });
+                            }
+                            res.json(results[0]);
+                        }
+                    );
+                }
+            );
+        }
+    );
+});
+
+app.delete('/educacion/:id', verificarToken, (req, res) => {
+    const { id } = req.params;
+
+    // Verificar que la educación pertenece al usuario
+    db.query(
+        'SELECT * FROM educacion WHERE id = ? AND usuario_id = ?',
+        [id, req.usuario.id],
+        (err, results) => {
+            if (err) {
+                console.error('Error al verificar educación:', err);
+                return res.status(500).json({ mensaje: 'Error al verificar la educación' });
+            }
+
+            if (results.length === 0) {
+                return res.status(404).json({ mensaje: 'Educación no encontrada o no autorizada' });
+            }
+
+            db.query(
+                'DELETE FROM educacion WHERE id = ? AND usuario_id = ?',
+                [id, req.usuario.id],
+                (err) => {
+                    if (err) {
+                        console.error('Error al eliminar educación:', err);
+                        return res.status(500).json({ mensaje: 'Error al eliminar la educación' });
+                    }
+                    res.json({ mensaje: 'Educación eliminada correctamente' });
+                }
+            );
+        }
+    );
 });
 
 // Servidor corriendo
