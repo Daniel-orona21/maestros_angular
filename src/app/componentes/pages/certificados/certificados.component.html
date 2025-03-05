@@ -1,47 +1,142 @@
-<div class="certificados-container"> 
-    <div class="certificados-fondo" style="display: flex; flex-direction: column;">
-      <!-- Información del Maestro en la esquina superior izquierda -->
-      <div class="profesor-info" style="align-self: flex-start;">
-        <h3>Certificados</h3>
-        <div>
-            <img class="usuario" src="/usuario.png" alt="usuario">
-          </div>
-        <div class="maestro-details">
-          <h4>Dagoberto Fiscal</h4>
-          <p>Materia: Programacion Orientada a obejetos</p>
+<div class="carta">
+    <div class="encabezado">
+        <h1>Certificados</h1>
+        <div class="acciones">
+            <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+                <span class="material-symbols-outlined">edit</span>
+                Editar
+            </button>
+            <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+                <span class="material-symbols-outlined">delete</span>
+                Eliminar
+            </button>
+            <button class="btn-agregar" (click)="abrirModal()">
+                <span class="material-symbols-outlined">add</span>
+                Agregar Certificado
+            </button>
         </div>
-      </div>
-  
-      <div class="certificados-lista" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px;">
-        <div class="certificado-card">
-          <img class="certificado-imagen" src="URL_DE_LA_IMAGEN" alt="Certificado">
-          <div class="certificado-info">
-            <h3>Certificado</h3>
-            <p><strong>Institución:</strong> Cisco</p>
-            <p><strong>Fecha:</strong> 20 de febrero de 2024</p>
-            <p><strong>Lugar:</strong> Universidad Tecnológica de Durango</p>
-          </div>
-        </div>
-  
-        <div class="certificado-card">
-          <img class="certificado-imagen" src="URL_DE_LA_IMAGEN" alt="Certificado">
-          <div class="certificado-info">
-            <h3>Certificado</h3>
-            <p><strong>Institución:</strong> Microsoft</p>
-            <p><strong>Fecha:</strong> 15 de marzo de 2024</p>
-            <p><strong>Lugar:</strong> Universidad Autónoma de Guadalajara</p>
-          </div>
-        </div>
-  
-        <div class="certificado-card">
-          <img class="certificado-imagen" src="URL_DE_LA_IMAGEN" alt="Certificado">
-          <div class="certificado-info">
-            <h3>Certificado</h3>
-            <p><strong>Institución:</strong> Google</p>
-            <p><strong>Fecha:</strong> 10 de abril de 2024</p>
-            <p><strong>Lugar:</strong> Tecnológico de Monterrey</p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+
+    <!-- Estado de carga -->
+    <div class="estado-carga" *ngIf="cargando">
+        <span class="material-symbols-outlined girando">progress_activity</span>
+        <p>Cargando certificados...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="mensaje-error" *ngIf="error">
+        <span class="material-symbols-outlined">error</span>
+        <p>{{ error }}</p>
+    </div>
+
+    <!-- Mensaje cuando no hay certificados -->
+    <div class="sin-experiencias" *ngIf="!cargando && !error && certificados.length === 0">
+        <span class="material-symbols-outlined">workspace_premium</span>
+        <p>Aún no has agregado ningún certificado</p>
+        <p class="subtexto">Haz clic en "Agregar Certificado" para comenzar</p>
+    </div>
+
+    <!-- Lista de Certificados -->
+    <div class="experiencias-grid" *ngIf="!cargando && !error && certificados.length > 0">
+        <div class="experiencia-card" *ngFor="let certificado of certificados"
+             [class.modo-edicion]="modoEdicion"
+             [class.modo-eliminacion]="modoEliminacion"
+             (click)="handleCardClick(certificado)">
+            <div class="card-overlay" *ngIf="modoEdicion || modoEliminacion">
+                <span class="material-symbols-outlined" *ngIf="modoEdicion">edit</span>
+                <span class="material-symbols-outlined" *ngIf="modoEliminacion">delete</span>
+            </div>
+            <div class="card-header">
+                <span class="material-symbols-outlined">workspace_premium</span>
+                <h3>{{certificado.nombre}}</h3>
+            </div>
+            <div class="card-content">
+                <p class="institucion">{{certificado.institucion}}</p>
+                <p class="fecha">{{formatearFecha(certificado.fecha_obtencion)}}</p>
+                <a *ngIf="certificado.archivo" 
+                   [href]="'http://localhost:5001/uploads/' + certificado.archivo" 
+                   target="_blank"
+                   class="ver-certificado"
+                   (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined">description</span>
+                    Ver certificado
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar/editar certificado -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>{{ certificadoSeleccionado?.id ? 'Editar' : 'Agregar' }} Certificado</h2>
+        
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="nombre">Nombre del certificado *</label>
+                <input 
+                    type="text" 
+                    id="nombre" 
+                    [(ngModel)]="certificadoSeleccionado!.nombre"
+                    [class.error]="erroresValidacion['nombre']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['nombre']">
+                    {{ erroresValidacion['nombre'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="institucion">Institución *</label>
+                <input 
+                    type="text" 
+                    id="institucion" 
+                    [(ngModel)]="certificadoSeleccionado!.institucion"
+                    [class.error]="erroresValidacion['institucion']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['institucion']">
+                    {{ erroresValidacion['institucion'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="fecha">Fecha de obtención *</label>
+                <input 
+                    type="date" 
+                    id="fecha" 
+                    [(ngModel)]="certificadoSeleccionado!.fecha_obtencion"
+                    [class.error]="erroresValidacion['fecha_obtencion']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['fecha_obtencion']">
+                    {{ erroresValidacion['fecha_obtencion'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="archivo">
+                    {{ certificadoSeleccionado?.id ? 'Actualizar archivo (opcional)' : 'Archivo del certificado *' }}
+                </label>
+                <input 
+                    type="file" 
+                    id="archivo" 
+                    (change)="handleFileInput($event)"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    [class.error]="erroresValidacion['archivo']">
+                <span class="texto-ayuda">Formatos permitidos: PDF, JPG, PNG (máx. 5MB)</span>
+                <span class="error-mensaje" *ngIf="erroresValidacion['archivo']">
+                    {{ erroresValidacion['archivo'] }}
+                </span>
+                <span class="archivo-seleccionado" *ngIf="archivoSeleccionado">
+                    Archivo seleccionado: {{ archivoSeleccionado.name }}
+                </span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+            <button 
+                class="btn-guardar" 
+                (click)="guardarCertificado()" 
+                [disabled]="cargando">
+                <span class="material-symbols-outlined" *ngIf="cargando">sync</span>
+                {{ cargando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>

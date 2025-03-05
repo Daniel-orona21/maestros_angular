@@ -1,12 +1,14 @@
 <div class="error_container">
     <div class="error_code">
-      <p>4</p>
-      <p>0</p>
-      <p>4</p>
+      <p>{{ errorCode === 'ERROR_NOT_FOUND' ? '4' : '5' }}</p>
+      <p>{{ errorCode === 'ERROR_NOT_FOUND' ? '0' : '0' }}</p>
+      <p>{{ errorCode === 'ERROR_NOT_FOUND' ? '4' : '0' }}</p>
     </div>
-    <div class="error_title">Página no encontrada</div>
+    <div class="error_title">
+      {{ errorCode === 'ERROR_NOT_FOUND' ? 'Página no encontrada' : 'Error del servidor' }}
+    </div>
     <div class="error_description">
-      Parece que no podemos encontrar esa página. Puede que se haya eliminado.
+      {{ errorMessage }}
     </div>
     <button class="action" (click)="dashboard()">Ir al inicio</button>
 

@@ -15,17 +15,26 @@ const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 
+// Función helper para manejar errores
+const handleError = (res, status, message, errorCode = 'ERROR_GENERAL') => {
+  return res.status(status).json({
+    error: message,
+    errorCode: errorCode,
+    shouldRedirect: true
+  });
+};
+
 // Middleware para verificar el token JWT
 const verificarToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   
   if (!token) {
-    return res.status(401).json({ error: 'Token no proporcionado' });
+    return handleError(res, 401, 'Token no proporcionado', 'ERROR_AUTH');
   }
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(401).json({ error: 'Token inválido o expirado' });
+      return handleError(res, 401, 'Token inválido o expirado', 'ERROR_AUTH');
     }
     req.usuario = decoded;
     next();
@@ -34,12 +43,16 @@ const verificarToken = (req, res, next) => {
 
 // Asegurar que el directorio de uploads existe
 const uploadDir = path.join(__dirname, 'uploads/profile-pics');
+const certificadosDir = path.join(__dirname, 'uploads/certificados');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+if (!fs.existsSync(certificadosDir)) {
+  fs.mkdirSync(certificadosDir, { recursive: true });
+}
 
-// Configuración de multer para subida de imágenes
-const storage = multer.memoryStorage(); // Cambiamos a memoria para procesar antes de guardar
+// Configuración de multer para subida de imágenes de perfil
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -55,6 +68,34 @@ const upload = multer({
       return cb(null, true);
     }
     cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, webp)'));
+  }
+});
+
+// Configuración de multer para subida de certificados
+const certificadosStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, certificadosDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'certificado-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const uploadCertificado = multer({
+  storage: certificadosStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB max para certificados
+  },
+  fileFilter: (req, file, cb) => {
+    const filetypes = /pdf|doc|docx|jpg|jpeg|png/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Solo se permiten archivos PDF, DOC, DOCX, JPG, JPEG y PNG'));
   }
 });
 
@@ -825,6 +866,149 @@ app.delete('/habilidades/:id', verificarToken, (req, res) => {
             );
         }
     );
+});
+
+// Endpoints para certificados
+app.get('/certificados', verificarToken, (req, res) => {
+  db.query(
+    'SELECT * FROM certificados WHERE usuario_id = ? ORDER BY fecha_obtencion DESC',
+    [req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al obtener certificados:', err);
+        return handleError(res, 500, 'Error al obtener los certificados', 'ERROR_DB');
+      }
+      res.json(results);
+    }
+  );
+});
+
+app.post('/certificados', verificarToken, uploadCertificado.single('archivo'), (req, res) => {
+  const { nombre, institucion, fecha_obtencion } = req.body;
+  const archivo = req.file ? `/certificados/${req.file.filename}` : null;
+
+  if (!nombre || !institucion || !fecha_obtencion) {
+    return handleError(res, 400, 'Faltan campos requeridos', 'ERROR_VALIDATION');
+  }
+
+  db.query(
+    'INSERT INTO certificados (usuario_id, nombre, institucion, fecha_obtencion, archivo) VALUES (?, ?, ?, ?, ?)',
+    [req.usuario.id, nombre, institucion, fecha_obtencion, archivo],
+    (err, result) => {
+      if (err) {
+        console.error('Error al crear certificado:', err);
+        return handleError(res, 500, 'Error al crear el certificado', 'ERROR_DB');
+      }
+
+      db.query(
+        'SELECT * FROM certificados WHERE id = ?',
+        [result.insertId],
+        (err, results) => {
+          if (err) {
+            console.error('Error al obtener el certificado creado:', err);
+            return handleError(res, 500, 'Error al obtener el certificado creado', 'ERROR_DB');
+          }
+          res.status(201).json(results[0]);
+        }
+      );
+    }
+  );
+});
+
+app.put('/certificados/:id', verificarToken, uploadCertificado.single('archivo'), (req, res) => {
+  const { id } = req.params;
+  const { nombre, institucion, fecha_obtencion } = req.body;
+  const archivo = req.file ? `/certificados/${req.file.filename}` : undefined;
+
+  db.query(
+    'SELECT * FROM certificados WHERE id = ? AND usuario_id = ?',
+    [id, req.usuario.id],
+    (err, certificado) => {
+      if (err) {
+        console.error('Error al verificar certificado:', err);
+        return handleError(res, 500, 'Error al verificar el certificado', 'ERROR_DB');
+      }
+
+      if (certificado.length === 0) {
+        return handleError(res, 404, 'Certificado no encontrado', 'ERROR_NOT_FOUND');
+      }
+
+      let query = 'UPDATE certificados SET nombre = ?, institucion = ?, fecha_obtencion = ?';
+      let params = [nombre, institucion, fecha_obtencion];
+
+      if (archivo) {
+        query += ', archivo = ?';
+        params.push(archivo);
+
+        if (certificado[0].archivo) {
+          const rutaArchivo = path.join(__dirname, 'uploads', certificado[0].archivo);
+          fs.unlink(rutaArchivo, (err) => {
+            if (err) console.error('Error al eliminar archivo anterior:', err);
+          });
+        }
+      }
+
+      query += ' WHERE id = ? AND usuario_id = ?';
+      params.push(id, req.usuario.id);
+
+      db.query(query, params, (err) => {
+        if (err) {
+          console.error('Error al actualizar certificado:', err);
+          return handleError(res, 500, 'Error al actualizar el certificado', 'ERROR_DB');
+        }
+
+        db.query(
+          'SELECT * FROM certificados WHERE id = ?',
+          [id],
+          (err, results) => {
+            if (err) {
+              console.error('Error al obtener el certificado actualizado:', err);
+              return handleError(res, 500, 'Error al obtener el certificado actualizado', 'ERROR_DB');
+            }
+            res.json(results[0]);
+          }
+        );
+      });
+    }
+  );
+});
+
+app.delete('/certificados/:id', verificarToken, (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    'SELECT * FROM certificados WHERE id = ? AND usuario_id = ?',
+    [id, req.usuario.id],
+    (err, certificado) => {
+      if (err) {
+        console.error('Error al verificar certificado:', err);
+        return handleError(res, 500, 'Error al verificar el certificado', 'ERROR_DB');
+      }
+
+      if (certificado.length === 0) {
+        return handleError(res, 404, 'Certificado no encontrado', 'ERROR_NOT_FOUND');
+      }
+
+      if (certificado[0].archivo) {
+        const rutaArchivo = path.join(__dirname, 'uploads', certificado[0].archivo);
+        fs.unlink(rutaArchivo, (err) => {
+          if (err) console.error('Error al eliminar archivo:', err);
+        });
+      }
+
+      db.query(
+        'DELETE FROM certificados WHERE id = ? AND usuario_id = ?',
+        [id, req.usuario.id],
+        (err) => {
+          if (err) {
+            console.error('Error al eliminar certificado:', err);
+            return handleError(res, 500, 'Error al eliminar el certificado', 'ERROR_DB');
+          }
+          res.json({ message: 'Certificado eliminado correctamente' });
+        }
+      );
+    }
+  );
 });
 
 // Servidor corriendo
