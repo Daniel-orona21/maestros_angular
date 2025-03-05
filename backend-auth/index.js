@@ -243,7 +243,8 @@ app.get('/user-info', (req, res) => {
     }
 
     const sql = `
-      SELECT id, nombre, correo, especialidad, foto_perfil, curriculum, sobre_mi, creado_en, origen 
+      SELECT id, nombre, correo, especialidad, foto_perfil, curriculum, sobre_mi, 
+             creado_en, origen, numero_telefono, domicilio 
       FROM usuarios 
       WHERE id = ?
     `;
@@ -276,14 +277,15 @@ app.put('/user-info', (req, res) => {
       return res.status(401).json({ error: 'Token inválido o expirado' });
     }
 
-    const { nombre, especialidad, origen, sobre_mi } = req.body;
+    const { nombre, especialidad, origen, sobre_mi, numero_telefono, domicilio } = req.body;
     const sql = `
       UPDATE usuarios 
-      SET nombre = ?, especialidad = ?, origen = ?, sobre_mi = ?
+      SET nombre = ?, especialidad = ?, origen = ?, sobre_mi = ?, 
+          numero_telefono = ?, domicilio = ?
       WHERE id = ?
     `;
 
-    db.query(sql, [nombre, especialidad, origen, sobre_mi, decoded.id], (err, result) => {
+    db.query(sql, [nombre, especialidad, origen, sobre_mi, numero_telefono, domicilio, decoded.id], (err, result) => {
       if (err) {
         console.error('Error al actualizar información del usuario:', err);
         return res.status(500).json({ error: 'Error en el servidor' });

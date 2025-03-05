@@ -13,6 +13,8 @@ export interface Usuario {
   sobre_mi: string;
   creado_en: string;
   origen: string;
+  numero_telefono: string;
+  domicilio: string;
 }
 
 export interface UserUpdateData {
@@ -20,6 +22,8 @@ export interface UserUpdateData {
   especialidad?: string;
   origen?: string;
   sobre_mi?: string;
+  numero_telefono?: string;
+  domicilio?: string;
 }
 
 @Injectable({

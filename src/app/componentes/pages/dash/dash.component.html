@@ -14,10 +14,12 @@
             <p class="nombre">{{ usuario?.nombre || 'Sin nombre registrado' }}</p>
             <p class="especialidad">{{ usuario?.especialidad || 'Especialidad no registrada' }}</p>
             <p class="origen">{{ usuario?.origen || 'Origen no registrado' }}</p>
+            <p class="telefono">{{ usuario?.numero_telefono || 'Teléfono no registrado' }}</p>
+            <p class="domicilio">{{ usuario?.domicilio || 'Domicilio no registrado' }}</p>
         </div>
         <div class="botones">
             <button class="edit" (click)="abrirModal(false)">
-                <span class="material-symbols-outlined">{{ usuario?.nombre || usuario?.especialidad || usuario?.origen ? 'edit' : 'add' }}</span>
+                <span class="material-symbols-outlined">{{ usuario?.nombre || usuario?.especialidad || usuario?.origen || usuario?.numero_telefono || usuario?.domicilio ? 'edit' : 'add' }}</span>
             </button>
         </div>
     </div>
@@ -50,6 +52,14 @@
             <div class="form-group">
                 <label for="origen">Origen</label>
                 <input type="text" id="origen" [(ngModel)]="datosEdicion.origen" placeholder="Ingresa tu origen">
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input type="tel" id="telefono" [(ngModel)]="datosEdicion.numero_telefono" placeholder="Ingresa tu teléfono">
+            </div>
+            <div class="form-group">
+                <label for="domicilio">Domicilio</label>
+                <input type="text" id="domicilio" [(ngModel)]="datosEdicion.domicilio" placeholder="Ingresa tu domicilio">
             </div>
         </div>
 

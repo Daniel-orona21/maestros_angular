@@ -86,7 +86,7 @@ p {
 }
 
 .especialidad {
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .origen {
@@ -161,9 +161,40 @@ p {
     background-color: #ff6666;
 }
 
+.telefono {
+    font-size: 14px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.telefono::before {
+    content: "phone";
+    font-family: 'Material Symbols Outlined';
+    font-size: 16px;
+}
+
+.domicilio {
+    font-size: 14px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.domicilio::before {
+    content: "home";
+    font-family: 'Material Symbols Outlined';
+    font-size: 16px;
+}
+
 /* Estilos para campos vacíos */
 .nombre:empty::before,
 .especialidad:empty::before,
+.origen:empty::before,
+.telefono:empty::before,
+.domicilio:empty::before,
 .infoSobreMi:empty::before {
     content: 'No disponible';
     color: #999;
@@ -192,6 +223,7 @@ p {
     max-width: 500px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     animation: modalFadeIn 0.3s ease;
+    overflow: hidden;
 }
 
 @keyframes modalFadeIn {
@@ -213,6 +245,7 @@ p {
 
 .form-group {
     margin-bottom: 20px;
+    width: 100%;
 }
 
 .form-group label {
@@ -225,16 +258,19 @@ p {
 .form-group input,
 .form-group textarea {
     width: 100%;
+    box-sizing: border-box;
     padding: 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 16px;
     transition: border-color 0.3s ease;
+    margin: 0;
 }
 
 .form-group textarea {
     min-height: 120px;
     resize: vertical;
+    max-width: 100%;
 }
 
 .form-group input:focus,
@@ -249,6 +285,7 @@ p {
     display: flex;
     justify-content: flex-end;
     gap: 15px;
+    padding: 0;
 }
 
 .btn-cancelar,
@@ -324,7 +361,8 @@ p {
 .modal-body {
   padding: 1rem;
   max-height: 70vh;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modal-footer {
