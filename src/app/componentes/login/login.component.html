@@ -9,17 +9,27 @@
   <form (submit)="registrar(); $event.preventDefault()" novalidate>
     <h1>Crear cuenta</h1>
     <div class="signIn">
-      <div class="contenedor2">
-        <p class="tipo">Nombre</p>
-        <input type="text" [(ngModel)]="nombre" placeholder="Nombre" name="nombre" required />
-      </div>
-      <div class="contenedor2">
-        <p class="tipo">E-mail</p>
-        <input type="email" [(ngModel)]="correo" placeholder="Email" name="correo" required />
-      </div>
-      <div class="contenedor2">
-        <p class="tipo">Contraseña</p>
-        <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
+      <div class="inputs">
+        <div class="contenedor2">
+          <p class="tipo">Nombre</p>
+          <input type="text" [(ngModel)]="nombre" (input)="validarNombre()" placeholder="Nombre" name="nombre" required />
+          <span class="error-message" [class.show-error]="nombreError">{{ nombreError }}</span>
+        </div>
+        <div class="contenedor2">
+          <p class="tipo">E-mail</p>
+          <input type="email" [(ngModel)]="correo" (input)="validarCorreo()" placeholder="Email" name="correo" required />
+          <span class="error-message" [class.show-error]="correoError">{{ correoError }}</span>
+        </div>
+        <div class="contenedor2">
+          <p class="tipo">Contraseña</p>
+          <div class="password-container">
+            <input [type]="mostrarContrasenaRegistro ? 'text' : 'password'" [(ngModel)]="contrasena" (input)="validarContrasena()" placeholder="Contraseña" name="contrasena" required />
+            <button type="button" class="toggle-password" (click)="$event.preventDefault(); toggleContrasenaRegistro()">
+              <span class="material-symbols-outlined">{{ mostrarContrasenaRegistro ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+          <span class="error-message" [class.show-error]="contrasenaError">{{ contrasenaError }}</span>
+        </div>
       </div>
       <div class="g-recaptcha" data-sitekey="6LeEmOkqAAAAAMS5TvdnuAr5O_jLVn54eo7MuHR_" data-callback="onCaptchaSuccess" data-theme="dark"></div>
     </div>
@@ -31,14 +41,21 @@
 <div class="form-container sign-in-container">
   <form (submit)="entrar(); $event.preventDefault()">
     <h1>Inicia sesión</h1>
-    <div class="signIn">
-      <div class="contenedor2">
-        <p class="tipo">Correo</p>
-        <input type="email" [(ngModel)]="correo" placeholder="Correo" name="correo" required="true" />
-      </div>
-      <div class="contenedor2">
-        <p class="tipo">Contraseña</p>
-        <input type="password" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
+    <div class="signIn2">
+      <div class="inputs2">
+        <div class="contenedor2">
+          <p class="tipo">Correo</p>
+          <input type="email" [(ngModel)]="correo" placeholder="Correo" name="correo" required="true" />
+        </div>
+        <div class="contenedor2">
+          <p class="tipo">Contraseña</p>
+          <div class="password-container">
+            <input [type]="mostrarContrasenaLogin ? 'text' : 'password'" [(ngModel)]="contrasena" placeholder="Contraseña" name="contrasena" required />
+            <button type="button" class="toggle-password" (click)="$event.preventDefault(); toggleContrasenaLogin()">
+              <span class="material-symbols-outlined">{{ mostrarContrasenaLogin ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     <button type="submit">Entrar</button>

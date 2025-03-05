@@ -28,6 +28,15 @@ export class LoginComponent {
   password: string = '';
   captchaResponse: string = '';
 
+  // Nuevas propiedades para validación
+  correoError: string = '';
+  contrasenaError: string = '';
+  nombreError: string = '';
+
+  // Propiedades para mostrar/ocultar contraseña
+  mostrarContrasenaRegistro: boolean = false;
+  mostrarContrasenaLogin: boolean = false;
+
   constructor(
     private router: Router, 
     private authService: AuthService,
@@ -41,12 +50,62 @@ export class LoginComponent {
     };
   }
 
+  // Método para validar correo
+  validarCorreo(): void {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!this.correo) {
+      this.correoError = 'El correo es requerido';
+    } else if (!emailRegex.test(this.correo)) {
+      this.correoError = 'Ingresa un correo válido';
+    } else {
+      this.correoError = '';
+    }
+  }
+
+  // Método para validar contraseña
+  validarContrasena(): void {
+    if (!this.contrasena) {
+      this.contrasenaError = 'La contraseña es requerida';
+    } else if (this.contrasena.length < 8) {
+      this.contrasenaError = 'Mínimo 8 caracteres';
+    } else if (!/(?=.*[A-Z])/.test(this.contrasena)) {
+      this.contrasenaError = 'Debe incluir al menos una mayúscula';
+    } else if (!/(?=.*[a-z])/.test(this.contrasena)) {
+      this.contrasenaError = 'Debe incluir al menos una minúscula';
+    } else if (!/(?=.*\d)/.test(this.contrasena)) {
+      this.contrasenaError = 'Debe incluir al menos un número';
+    } else if (!/(?=.*[!@#$%^&*])/.test(this.contrasena)) {
+      this.contrasenaError = 'Debe incluir al menos un carácter especial (!@#$%^&*)';
+    } else {
+      this.contrasenaError = '';
+    }
+  }
+
+  // Método para validar nombre
+  validarNombre(): void {
+    if (!this.nombre) {
+      this.nombreError = 'El nombre es requerido';
+    } else if (this.nombre.length < 3) {
+      this.nombreError = 'El nombre debe tener al menos 3 caracteres';
+    } else {
+      this.nombreError = '';
+    }
+  }
+
   togglePanel(activate: boolean): void {
     this.isRightPanelActive = activate;
     if (!activate) {
       this.captchaResponse = '';
       grecaptcha.reset();
     }
+  }
+
+  toggleContrasenaRegistro(): void {
+    this.mostrarContrasenaRegistro = !this.mostrarContrasenaRegistro;
+  }
+
+  toggleContrasenaLogin(): void {
+    this.mostrarContrasenaLogin = !this.mostrarContrasenaLogin;
   }
 
   registrar() {
