@@ -11,16 +11,54 @@
             <p class="origen">{{ usuario?.origen || 'Origen no registrado' }}</p>
         </div>
         <div class="botones">
-            <button class="edit"><span class="material-symbols-outlined">{{ usuario?.nombre || usuario?.especialidad || usuario?.origen ? 'edit' : 'add' }}</span></button>
+            <button class="edit" (click)="abrirModal(false)">
+                <span class="material-symbols-outlined">{{ usuario?.nombre || usuario?.especialidad || usuario?.origen ? 'edit' : 'add' }}</span>
+            </button>
         </div>
     </div>
 
     <div class="sobreMi">
-        <button class="edit editA"><span class="material-symbols-outlined">{{ usuario?.sobre_mi ? 'edit' : 'add' }}</span></button>
+        <button class="edit editA" (click)="abrirModal(true)">
+            <span class="material-symbols-outlined">{{ usuario?.sobre_mi ? 'edit' : 'add' }}</span>
+        </button>
         <p class="sobreMiTitulo">Sobre Mi</p>
         <p class="infoSobreMi">
             {{ usuario?.sobre_mi || 'No hay información registrada sobre el profesor.' }}
         </p>
+    </div>
+</div>
+
+<!-- Modal de edición -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>{{ editandoSobreMi ? 'Editar Sobre Mi' : 'Editar Información Personal' }}</h2>
+        
+        <div class="modal-body" *ngIf="!editandoSobreMi">
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" [(ngModel)]="datosEdicion.nombre" placeholder="Ingresa tu nombre">
+            </div>
+            <div class="form-group">
+                <label for="especialidad">Especialidad</label>
+                <input type="text" id="especialidad" [(ngModel)]="datosEdicion.especialidad" placeholder="Ingresa tu especialidad">
+            </div>
+            <div class="form-group">
+                <label for="origen">Origen</label>
+                <input type="text" id="origen" [(ngModel)]="datosEdicion.origen" placeholder="Ingresa tu origen">
+            </div>
+        </div>
+
+        <div class="modal-body" *ngIf="editandoSobreMi">
+            <div class="form-group">
+                <label for="sobreMi">Sobre Mi</label>
+                <textarea id="sobreMi" [(ngModel)]="datosEdicion.sobre_mi" placeholder="Cuéntanos sobre ti"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+            <button class="btn-guardar" (click)="guardarCambios()">Guardar</button>
+        </div>
     </div>
 </div>
 

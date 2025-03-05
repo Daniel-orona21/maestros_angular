@@ -14,6 +14,13 @@ export interface Usuario {
   origen: string;
 }
 
+export interface UserUpdateData {
+  nombre?: string;
+  especialidad?: string;
+  origen?: string;
+  sobre_mi?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -61,5 +68,17 @@ export class AuthService {
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get<Usuario>(`${this.apiUrl}/user-info`, { headers });
+  }
+
+  updateUserInfo(data: UserUpdateData): Observable<any> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return new Observable(observer => {
+        observer.error({ error: 'Token no encontrado' });
+      });
+    }
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.put(`${this.apiUrl}/user-info`, data, { headers });
   }
 }

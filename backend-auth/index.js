@@ -232,6 +232,41 @@ app.get('/user-info', (req, res) => {
   });
 });
 
+// 🔄 Actualizar información del usuario
+app.put('/user-info', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ error: 'Token no proporcionado' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Token inválido o expirado' });
+    }
+
+    const { nombre, especialidad, origen, sobre_mi } = req.body;
+    const sql = `
+      UPDATE usuarios 
+      SET nombre = ?, especialidad = ?, origen = ?, sobre_mi = ?
+      WHERE id = ?
+    `;
+
+    db.query(sql, [nombre, especialidad, origen, sobre_mi, decoded.id], (err, result) => {
+      if (err) {
+        console.error('Error al actualizar información del usuario:', err);
+        return res.status(500).json({ error: 'Error en el servidor' });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+
+      res.json({ message: 'Información actualizada correctamente' });
+    });
+  });
+});
+
 // Servidor corriendo
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
