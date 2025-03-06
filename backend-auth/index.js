@@ -1162,6 +1162,166 @@ app.delete('/logros/:id', verificarToken, (req, res) => {
   );
 });
 
+// Endpoints para Referencias
+app.get('/referencias', verificarToken, (req, res) => {
+  db.query(
+    'SELECT * FROM referencias WHERE usuario_id = ? ORDER BY id DESC',
+    [req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al obtener referencias:', err);
+        return handleError(res, 500, 'Error al obtener las referencias', 'ERROR_DB');
+      }
+      res.json(results);
+    }
+  );
+});
+
+app.post('/referencias', verificarToken, uploadCertificado.single('archivo'), (req, res) => {
+  const { nombre, cargo, institucion, contacto, comentario } = req.body;
+  const archivo = req.file ? `/certificados/${req.file.filename}` : null;
+
+  // Validar campos requeridos
+  if (!nombre || !contacto) {
+    return handleError(res, 400, 'El nombre y el contacto son requeridos', 'ERROR_VALIDACION');
+  }
+
+  db.query(
+    'INSERT INTO referencias (usuario_id, nombre, cargo, institucion, contacto, comentario, archivo) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [req.usuario.id, nombre, cargo || null, institucion || null, contacto, comentario || null, archivo],
+    (err, result) => {
+      if (err) {
+        console.error('Error al crear referencia:', err);
+        return handleError(res, 500, 'Error al crear la referencia', 'ERROR_DB');
+      }
+
+      db.query(
+        'SELECT * FROM referencias WHERE id = ?',
+        [result.insertId],
+        (err, results) => {
+          if (err) {
+            console.error('Error al obtener la referencia creada:', err);
+            return handleError(res, 500, 'Error al obtener la referencia creada', 'ERROR_DB');
+          }
+          res.status(201).json(results[0]);
+        }
+      );
+    }
+  );
+});
+
+app.put('/referencias/:id', verificarToken, uploadCertificado.single('archivo'), (req, res) => {
+  const { id } = req.params;
+  const { nombre, cargo, institucion, contacto, comentario } = req.body;
+  const archivo = req.file ? `/certificados/${req.file.filename}` : undefined;
+
+  // Validar campos requeridos
+  if (!nombre || !contacto) {
+    return handleError(res, 400, 'El nombre y el contacto son requeridos', 'ERROR_VALIDACION');
+  }
+
+  // Verificar si la referencia existe y pertenece al usuario
+  db.query(
+    'SELECT * FROM referencias WHERE id = ? AND usuario_id = ?',
+    [id, req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al verificar referencia:', err);
+        return handleError(res, 500, 'Error al actualizar la referencia', 'ERROR_DB');
+      }
+
+      if (results.length === 0) {
+        return handleError(res, 404, 'Referencia no encontrada', 'ERROR_NOT_FOUND');
+      }
+
+      const referenciaAnterior = results[0];
+
+      // Si hay un nuevo archivo, eliminar el anterior
+      if (archivo && referenciaAnterior.archivo) {
+        const archivoAnterior = referenciaAnterior.archivo.replace(/^\/uploads\//, '');
+        const rutaArchivo = path.join(__dirname, 'uploads', archivoAnterior);
+        fs.unlink(rutaArchivo, (err) => {
+          if (err) console.error('Error al eliminar archivo:', err);
+        });
+      }
+
+      // Construir la consulta de actualización
+      const actualizaciones = {
+        nombre,
+        cargo: cargo || null,
+        institucion: institucion || null,
+        contacto,
+        comentario: comentario || null,
+        ...(archivo && { archivo })
+      };
+
+      db.query(
+        'UPDATE referencias SET ? WHERE id = ? AND usuario_id = ?',
+        [actualizaciones, id, req.usuario.id],
+        (err) => {
+          if (err) {
+            console.error('Error al actualizar referencia:', err);
+            return handleError(res, 500, 'Error al actualizar la referencia', 'ERROR_DB');
+          }
+
+          db.query(
+            'SELECT * FROM referencias WHERE id = ?',
+            [id],
+            (err, results) => {
+              if (err) {
+                console.error('Error al obtener la referencia actualizada:', err);
+                return handleError(res, 500, 'Error al obtener la referencia actualizada', 'ERROR_DB');
+              }
+              res.json(results[0]);
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
+app.delete('/referencias/:id', verificarToken, (req, res) => {
+  const { id } = req.params;
+
+  // Verificar si la referencia existe y pertenece al usuario
+  db.query(
+    'SELECT archivo FROM referencias WHERE id = ? AND usuario_id = ?',
+    [id, req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al verificar referencia:', err);
+        return handleError(res, 500, 'Error al eliminar la referencia', 'ERROR_DB');
+      }
+
+      if (results.length === 0) {
+        return handleError(res, 404, 'Referencia no encontrada', 'ERROR_NOT_FOUND');
+      }
+
+      // Si hay un archivo, eliminarlo
+      if (results[0].archivo) {
+        const archivoAnterior = results[0].archivo.replace(/^\/uploads\//, '');
+        const rutaArchivo = path.join(__dirname, 'uploads', archivoAnterior);
+        fs.unlink(rutaArchivo, (err) => {
+          if (err) console.error('Error al eliminar archivo:', err);
+        });
+      }
+
+      db.query(
+        'DELETE FROM referencias WHERE id = ? AND usuario_id = ?',
+        [id, req.usuario.id],
+        (err) => {
+          if (err) {
+            console.error('Error al eliminar referencia:', err);
+            return handleError(res, 500, 'Error al eliminar la referencia', 'ERROR_DB');
+          }
+          res.json({ message: 'Referencia eliminada correctamente' });
+        }
+      );
+    }
+  );
+});
+
 // Servidor corriendo
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);

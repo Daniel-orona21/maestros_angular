@@ -1,1 +1,172 @@
-<p>referencias works!</p>
+<div class="carta">
+    <div class="encabezado">
+        <h1>Referencias</h1>
+        <div class="acciones">
+            <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+                <span class="material-symbols-outlined">edit</span>
+                Editar
+            </button>
+            <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+                <span class="material-symbols-outlined">delete</span>
+                Eliminar
+            </button>
+            <button class="btn-agregar" (click)="abrirModal()">
+                <span class="material-symbols-outlined">add</span>
+                Agregar Referencia
+            </button>
+        </div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div class="estado-carga" *ngIf="cargando">
+        <span class="material-symbols-outlined girando">progress_activity</span>
+        <p>Cargando referencias...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="mensaje-error" *ngIf="error">
+        <span class="material-symbols-outlined">error</span>
+        <p>{{ error }}</p>
+    </div>
+
+    <!-- Mensaje cuando no hay referencias -->
+    <div class="sin-experiencias" *ngIf="!cargando && !error && referencias.length === 0">
+        <span class="material-symbols-outlined">person</span>
+        <p>Aún no has agregado ninguna referencia</p>
+        <p class="subtexto">Haz clic en "Agregar Referencia" para comenzar</p>
+    </div>
+
+    <!-- Lista de Referencias -->
+    <div class="experiencias-grid" *ngIf="!cargando && !error && referencias.length > 0">
+        <div class="experiencia-card" *ngFor="let referencia of referencias"
+             [class.modo-edicion]="modoEdicion"
+             [class.modo-eliminacion]="modoEliminacion"
+             (click)="handleCardClick(referencia)">
+            <div class="card-overlay" *ngIf="modoEdicion || modoEliminacion">
+                <span class="material-symbols-outlined" *ngIf="modoEdicion">edit</span>
+                <span class="material-symbols-outlined" *ngIf="modoEliminacion">delete</span>
+            </div>
+            <div class="card-header">
+                <span class="material-symbols-outlined">person</span>
+                <h3>{{referencia.nombre}}</h3>
+            </div>
+            <div class="card-content">
+                <p class="cargo" *ngIf="referencia.cargo">{{referencia.cargo}}</p>
+                <p class="institucion" *ngIf="referencia.institucion">{{referencia.institucion}}</p>
+                <p class="contacto">{{referencia.contacto}}</p>
+                <p class="comentario" *ngIf="referencia.comentario">" {{referencia.comentario}} "</p>
+                <a *ngIf="referencia.archivo" 
+                   [href]="'http://localhost:5001/uploads/' + referencia.archivo" 
+                   target="_blank"
+                   class="ver-certificado"
+                   (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined">description</span>
+                    Ver documento
+                </a>
+                <p class="no-documento" *ngIf="!referencia.archivo">
+                    <span class="material-symbols-outlined">block</span>
+                    Sin documento adjunto
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar/editar referencia -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>{{ referenciaSeleccionada?.id ? 'Editar' : 'Agregar' }} Referencia</h2>
+        
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="nombre">Nombre completo *</label>
+                <input 
+                    type="text" 
+                    id="nombre" 
+                    [(ngModel)]="referenciaSeleccionada!.nombre"
+                    [class.error]="erroresValidacion['nombre']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['nombre']">
+                    {{ erroresValidacion['nombre'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="cargo">Cargo</label>
+                <input 
+                    type="text" 
+                    id="cargo" 
+                    [(ngModel)]="referenciaSeleccionada!.cargo"
+                    [class.error]="erroresValidacion['cargo']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['cargo']">
+                    {{ erroresValidacion['cargo'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="institucion">Institución</label>
+                <input 
+                    type="text" 
+                    id="institucion" 
+                    [(ngModel)]="referenciaSeleccionada!.institucion"
+                    [class.error]="erroresValidacion['institucion']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['institucion']">
+                    {{ erroresValidacion['institucion'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="contacto">Contacto (teléfono o correo) *</label>
+                <input 
+                    type="text" 
+                    id="contacto" 
+                    [(ngModel)]="referenciaSeleccionada!.contacto"
+                    [class.error]="erroresValidacion['contacto']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['contacto']">
+                    {{ erroresValidacion['contacto'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="comentario">Comentario</label>
+                <textarea 
+                    id="comentario" 
+                    [(ngModel)]="referenciaSeleccionada!.comentario"
+                    [class.error]="erroresValidacion['comentario']">
+                </textarea>
+                <span class="error-mensaje" *ngIf="erroresValidacion['comentario']">
+                    {{ erroresValidacion['comentario'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="archivo">
+                    {{ referenciaSeleccionada?.id ? 'Actualizar archivo (opcional)' : 'Archivo de referencia' }}
+                </label>
+                <input 
+                    type="file" 
+                    id="archivo" 
+                    (change)="handleFileInput($event)"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    [class.error]="erroresValidacion['archivo']">
+                <span class="texto-ayuda">Formatos permitidos: PDF, JPG, PNG (máx. 5MB)</span>
+                <span class="error-mensaje" *ngIf="erroresValidacion['archivo']">
+                    {{ erroresValidacion['archivo'] }}
+                </span>
+                <span class="archivo-seleccionado" *ngIf="archivoSeleccionado">
+                    Archivo seleccionado: {{ archivoSeleccionado.name }}
+                </span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+            <button 
+                class="btn-guardar" 
+                (click)="guardarReferencia()" 
+                [disabled]="cargando">
+                <span class="material-symbols-outlined" *ngIf="cargando">sync</span>
+                {{ cargando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>
