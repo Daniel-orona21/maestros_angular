@@ -1,30 +1,32 @@
-<div class="carta" *ngIf="!cargando && !error">
-    <div class="contenedorFondo">
-        <img class="fondo" src="assets/Background_image.png" alt="fondo">
-        <div class="contenedorUsuario" (click)="editarFoto()">
-            <img class="usuario" [src]="usuario?.foto_perfil || 'assets/usuario.png'" [alt]="usuario?.nombre || 'Usuario'">
-            <div class="overlay-usuario">
-                <span class="material-symbols-outlined">edit</span>
+<div class="cartas">
+    <div class="carta" *ngIf="!cargando && !error">
+        <div class="contenedorFondo">
+            <img class="fondo" src="assets/Background_image.png" alt="fondo">
+            <div class="contenedorUsuario" (click)="editarFoto()">
+                <img class="usuario" [src]="usuario?.foto_perfil || 'assets/usuario.png'" [alt]="usuario?.nombre || 'Usuario'">
+                <div class="overlay-usuario">
+                    <span class="material-symbols-outlined">edit</span>
+                </div>
             </div>
         </div>
-    </div>
-
-    <div class="detalles">
-        <div class="info">
-            <p class="nombre">{{ usuario?.nombre || 'Sin nombre registrado' }}</p>
-            <p class="especialidad">{{ usuario?.especialidad || 'Especialidad no registrada' }}</p>
-            <p class="origen">{{ usuario?.origen || 'Origen no registrado' }}</p>
-            <p class="telefono">{{ usuario?.numero_telefono || 'Teléfono no registrado' }}</p>
-            <p class="domicilio">{{ usuario?.domicilio || 'Domicilio no registrado' }}</p>
+    
+        <div class="detalles">
+            <div class="info">
+                <p class="nombre">{{ usuario?.nombre || 'Sin nombre registrado' }}</p>
+                <p class="especialidad">{{ usuario?.especialidad || 'Especialidad no registrada' }}</p>
+                <p class="origen">{{ usuario?.origen || 'Origen no registrado' }}</p>
+                <p class="telefono">{{ usuario?.numero_telefono || 'Teléfono no registrado' }}</p>
+                <p class="domicilio">{{ usuario?.domicilio || 'Domicilio no registrado' }}</p>
+            </div>
+            <div class="botones">
+                <button class="edit" (click)="abrirModal(false)">
+                    <span class="material-symbols-outlined">{{ usuario?.nombre || usuario?.especialidad || usuario?.origen || usuario?.numero_telefono || usuario?.domicilio ? 'edit' : 'add' }}</span>
+                </button>
+            </div>
         </div>
-        <div class="botones">
-            <button class="edit" (click)="abrirModal(false)">
-                <span class="material-symbols-outlined">{{ usuario?.nombre || usuario?.especialidad || usuario?.origen || usuario?.numero_telefono || usuario?.domicilio ? 'edit' : 'add' }}</span>
-            </button>
-        </div>
+    
     </div>
-
-    <div class="sobreMi">
+    <div class="carta sobreMi">
         <button class="edit editA" (click)="abrirModal(true)">
             <span class="material-symbols-outlined">{{ usuario?.sobre_mi ? 'edit' : 'add' }}</span>
         </button>
@@ -33,53 +35,58 @@
             {{ usuario?.sobre_mi || 'No hay información registrada sobre el profesor.' }}
         </p>
     </div>
-
-    <div class="curriculum">
-        <div class="curriculum-header">
-            <h2 class="curriculum-titulo">Currículum Vitae</h2>
+    <div class="carta cartaCV" *ngIf="!cargando && !error">
+            <div class="curriculum-header">
+                <div class="curriculum-title-section">
+                    <h2 class="curriculum-titulo">Currículum Vitae</h2>
+                </div>
+                <div class="curriculum-actions" *ngIf="usuario?.curriculum">
+                    <button class="btn-modo" (click)="actualizarCurriculum()">
+                        <span class="material-symbols-outlined">edit</span>
+                        Actualizar
+                    </button>
+                    <button class="btn-modo" (click)="generarCurriculum()">
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        Generar
+                    </button>
+                    <button class="btn-modo" (click)="abrirCurriculum()">
+                        <span class="material-symbols-outlined">visibility</span>
+                        Ver
+                    </button>
+                    <button class="btn-modo btn-eliminar" (click)="eliminarCurriculum()">
+                        <span class="material-symbols-outlined">delete</span>
+                        Eliminar
+                    </button>
+                </div>
+            </div>
             <div class="linea-titulo"></div>
-        </div>
-        
-        <div *ngIf="usuario?.curriculum" class="curriculum-content">
-            <div class="curriculum-preview">
-                <iframe [src]="curriculumUrl" class="curriculum-iframe" frameborder="0">
-                    <p>Tu navegador no puede mostrar el PDF. <a [href]="curriculumUrl" target="_blank">Descargar currículum</a></p>
-                </iframe>
+            
+            <div class="curriculum-content">
+                <div *ngIf="usuario?.curriculum" class="curriculum-preview-container">
+                    <div class="curriculum-preview">
+                        <iframe [src]="curriculumUrl" class="curriculum-iframe" frameborder="0">
+                            <p>Tu navegador no puede mostrar el PDF. <a [href]="curriculumUrl" target="_blank">Descargar currículum</a></p>
+                        </iframe>
+                    </div>
+                </div>
+    
+                <div *ngIf="!usuario?.curriculum" class="sin-curriculum">
+                    <div class="sin-curriculum-content">
+                        <span class="material-symbols-outlined documento-icon">description</span>
+                        <p>No has subido tu currículum todavía</p>
+                        <div class="curriculum-buttons">
+                            <button class="btn-modo" (click)="actualizarCurriculum()">
+                                <span class="material-symbols-outlined">upload</span>
+                                Subir
+                            </button>
+                            <button class="btn-modo" (click)="generarCurriculum()">
+                                <span class="material-symbols-outlined">auto_awesome</span>
+                                Generar
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="curriculum-actions">
-                <button class="btn-modo" (click)="actualizarCurriculum()">
-                    <span class="material-symbols-outlined">edit</span>
-                    Actualizar
-                </button>
-                <button class="btn-modo" (click)="abrirCurriculum()">
-                    <span class="material-symbols-outlined">visibility</span>
-                    Ver
-                </button>
-                <button class="btn-modo" (click)="generarCurriculum()">
-                    <span class="material-symbols-outlined">auto_awesome</span>
-                    Generar
-                </button>
-                <button class="btn-modo btn-eliminar" (click)="eliminarCurriculum()">
-                    <span class="material-symbols-outlined">delete</span>
-                    Eliminar
-                </button>
-            </div>
-        </div>
-
-        <div *ngIf="!usuario?.curriculum" class="sin-curriculum">
-            <span class="material-symbols-outlined documento-icon">description</span>
-            <p>No has subido tu currículum todavía</p>
-            <div class="curriculum-buttons">
-                <button class="btn-modo" (click)="actualizarCurriculum()">
-                    <span class="material-symbols-outlined">upload</span>
-                    Subir
-                </button>
-                <button class="btn-modo" (click)="generarCurriculum()">
-                    <span class="material-symbols-outlined">auto_awesome</span>
-                    Generar
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 
