@@ -132,6 +132,338 @@
     </div>
 </div>
 
+<!-- Modal de generación de currículum -->
+<div class="modal-overlay" *ngIf="mostrarModalGenerarCV" (click)="cerrarModalGenerarCV()">
+    <div class="modal-content-generar-cv" (click)="$event.stopPropagation()">
+        <div class="modal-generar-cv">
+            <div class="modal-header">
+                <h2>Generar Currículum Vitae</h2>
+                <button class="btn-cerrar" (click)="cerrarModalGenerarCV()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <div class="modal-body-generar-cv">
+                <div class="editor-cv">
+                    <div class="tab-content">
+                        <!-- Información Personal -->
+                        <div *ngIf="tabActivo === 'personal'" class="tab-pane active">
+                            <div class="seccion-editor">
+                                <h3>Información Personal</h3>
+                                <div class="form-group">
+                                    <label>Nombre</label>
+                                    <input type="text" [(ngModel)]="datosCV.nombre" [value]="usuario?.nombre">
+                                </div>
+                                <div class="form-group">
+                                    <label>Especialidad</label>
+                                    <input type="text" [(ngModel)]="datosCV.especialidad" [value]="usuario?.especialidad">
+                                </div>
+                                <div class="form-group">
+                                    <label>Origen</label>
+                                    <input type="text" [(ngModel)]="datosCV.origen" [value]="usuario?.origen">
+                                </div>
+                                <div class="form-group">
+                                    <label>Teléfono</label>
+                                    <input type="tel" [(ngModel)]="datosCV.telefono" [value]="usuario?.numero_telefono">
+                                </div>
+                                <div class="form-group">
+                                    <label>Domicilio</label>
+                                    <input type="text" [(ngModel)]="datosCV.domicilio" [value]="usuario?.domicilio">
+                                </div>
+                            </div>
+
+                            <div class="seccion-editor">
+                                <h3>Sobre Mi</h3>
+                                <div class="form-group">
+                                    <textarea [(ngModel)]="datosCV.sobreMi" [value]="usuario?.sobre_mi" rows="4"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experiencia Laboral -->
+                        <div *ngIf="tabActivo === 'experiencia'" class="tab-pane active">
+                            <div class="seccion-editor">
+                                <h3>Experiencia Laboral</h3>
+                                <div class="lista-experiencias">
+                                    <div *ngFor="let exp of experiencias" class="item-lista">
+                                        <div class="item-header">
+                                            <h4>{{exp.puesto}}</h4>
+                                            <span class="material-symbols-outlined" (click)="editarExperiencia(exp)">edit</span>
+                                        </div>
+                                        <p>{{exp.empleador}} - {{exp.ciudad}}, {{exp.pais}}</p>
+                                        <p>{{exp.fecha_inicio_mes}}/{{exp.fecha_inicio_anio}} - {{exp.fecha_fin_mes ? exp.fecha_fin_mes + '/' + exp.fecha_fin_anio : 'Presente'}}</p>
+                                    </div>
+                                </div>
+                                <button class="btn-agregar" (click)="mostrarCamposExperiencia = !mostrarCamposExperiencia">
+                                    <span class="material-symbols-outlined">{{ mostrarCamposExperiencia ? 'remove' : 'add' }}</span>
+                                    {{ mostrarCamposExperiencia ? 'Cancelar' : 'Agregar Experiencia' }}
+                                </button>
+                                <div class="campos-entrada" *ngIf="mostrarCamposExperiencia">
+                                    <div class="form-group">
+                                        <label>Puesto</label>
+                                        <input type="text" [(ngModel)]="nuevaExperiencia.puesto" placeholder="Ingresa el puesto">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Empleador</label>
+                                        <input type="text" [(ngModel)]="nuevaExperiencia.empleador" placeholder="Ingresa el empleador">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Ciudad</label>
+                                        <input type="text" [(ngModel)]="nuevaExperiencia.ciudad" placeholder="Ingresa la ciudad">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>País</label>
+                                        <input type="text" [(ngModel)]="nuevaExperiencia.pais" placeholder="Ingresa el país">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fecha Inicio</label>
+                                        <input type="date" [(ngModel)]="nuevaExperiencia.fecha_inicio">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fecha Fin</label>
+                                        <input type="date" [(ngModel)]="nuevaExperiencia.fecha_fin">
+                                    </div>
+                                    <button class="btn-guardar" (click)="guardarExperiencia(); mostrarCamposExperiencia = false">
+                                        <span class="material-symbols-outlined">save</span>
+                                        {{ experienciaEditando ? 'Actualizar' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Educación -->
+                        <div *ngIf="tabActivo === 'educacion'" class="tab-pane active">
+                            <div class="seccion-editor">
+                                <h3>Educación</h3>
+                                <div class="lista-educacion">
+                                    <div *ngFor="let edu of educacion" class="item-lista">
+                                        <div class="item-header">
+                                            <h4>{{edu.titulo}}</h4>
+                                            <span class="material-symbols-outlined" (click)="editarEducacion(edu)">edit</span>
+                                        </div>
+                                        <p>{{edu.institucion}} - {{edu.ciudad}}</p>
+                                        <p>{{edu.mes_inicio}}/{{edu.ano_inicio}} - {{edu.mes_fin ? edu.mes_fin + '/' + edu.ano_fin : 'Presente'}}</p>
+                                    </div>
+                                </div>
+                                <button class="btn-agregar" (click)="mostrarCamposEducacion = !mostrarCamposEducacion">
+                                    <span class="material-symbols-outlined">{{ mostrarCamposEducacion ? 'remove' : 'add' }}</span>
+                                    {{ mostrarCamposEducacion ? 'Cancelar' : 'Agregar Educación' }}
+                                </button>
+                                <div class="campos-entrada" *ngIf="mostrarCamposEducacion">
+                                    <div class="form-group">
+                                        <label>Título</label>
+                                        <input type="text" [(ngModel)]="nuevaEducacion.titulo" placeholder="Ingresa el título">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Institución</label>
+                                        <input type="text" [(ngModel)]="nuevaEducacion.institucion" placeholder="Ingresa la institución">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Ciudad</label>
+                                        <input type="text" [(ngModel)]="nuevaEducacion.ciudad" placeholder="Ingresa la ciudad">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fecha Inicio</label>
+                                        <input type="date" [(ngModel)]="nuevaEducacion.fecha_inicio">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fecha Fin</label>
+                                        <input type="date" [(ngModel)]="nuevaEducacion.fecha_fin">
+                                    </div>
+                                    <button class="btn-guardar" (click)="guardarEducacion(); mostrarCamposEducacion = false">
+                                        <span class="material-symbols-outlined">save</span>
+                                        {{ educacionEditando ? 'Actualizar' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Habilidades -->
+                        <div *ngIf="tabActivo === 'habilidades'" class="tab-pane active">
+                            <div class="seccion-editor">
+                                <h3>Habilidades</h3>
+                                <div class="lista-habilidades">
+                                    <div *ngFor="let hab of habilidades" class="item-lista">
+                                        <div class="item-header">
+                                            <p>{{hab.descripcion}}</p>
+                                            <span class="material-symbols-outlined" (click)="editarHabilidad(hab)">edit</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn-agregar" (click)="mostrarCamposHabilidad = !mostrarCamposHabilidad">
+                                    <span class="material-symbols-outlined">{{ mostrarCamposHabilidad ? 'remove' : 'add' }}</span>
+                                    {{ mostrarCamposHabilidad ? 'Cancelar' : 'Agregar Habilidad' }}
+                                </button>
+                                <div class="campos-entrada" *ngIf="mostrarCamposHabilidad">
+                                    <div class="form-group">
+                                        <label>Habilidad</label>
+                                        <input type="text" [(ngModel)]="nuevaHabilidad.descripcion" placeholder="Ingresa una habilidad">
+                                    </div>
+                                    <button class="btn-guardar" (click)="guardarHabilidad(); mostrarCamposHabilidad = false">
+                                        <span class="material-symbols-outlined">save</span>
+                                        {{ habilidadEditando ? 'Actualizar' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Certificados -->
+                        <div *ngIf="tabActivo === 'certificados'" class="tab-pane active">
+                            <div class="seccion-editor">
+                                <h3>Certificados</h3>
+                                <div class="lista-certificados">
+                                    <div *ngFor="let cert of certificados" class="item-lista">
+                                        <div class="item-header">
+                                            <h4>{{cert.nombre}}</h4>
+                                            <span class="material-symbols-outlined" (click)="editarCertificado(cert)">edit</span>
+                                        </div>
+                                        <p>{{cert.institucion}}</p>
+                                        <p>Fecha de obtención: {{cert.fecha_obtencion}}</p>
+                                    </div>
+                                </div>
+                                <button class="btn-agregar" (click)="mostrarCamposCertificado = !mostrarCamposCertificado">
+                                    <span class="material-symbols-outlined">{{ mostrarCamposCertificado ? 'remove' : 'add' }}</span>
+                                    {{ mostrarCamposCertificado ? 'Cancelar' : 'Agregar Certificado' }}
+                                </button>
+                                <div class="campos-entrada" *ngIf="mostrarCamposCertificado">
+                                    <div class="form-group">
+                                        <label>Nombre del Certificado</label>
+                                        <input type="text" [(ngModel)]="nuevoCertificado.nombre" placeholder="Ingresa el nombre del certificado">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Institución</label>
+                                        <input type="text" [(ngModel)]="nuevoCertificado.institucion" placeholder="Ingresa la institución">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fecha de Obtención</label>
+                                        <input type="date" [(ngModel)]="nuevoCertificado.fecha_obtencion">
+                                    </div>
+                                    <button class="btn-guardar" (click)="guardarCertificado(); mostrarCamposCertificado = false">
+                                        <span class="material-symbols-outlined">save</span>
+                                        {{ certificadoEditando ? 'Actualizar' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Logros -->
+                        <div *ngIf="tabActivo === 'logros'" class="tab-pane active">
+                            <div class="seccion-editor">
+                                <h3>Logros</h3>
+                                <div class="lista-logros">
+                                    <div *ngFor="let logro of logros" class="item-lista">
+                                        <div class="item-header">
+                                            <h4>{{logro.titulo}}</h4>
+                                            <span class="material-symbols-outlined" (click)="editarLogro(logro)">edit</span>
+                                        </div>
+                                        <p>{{logro.descripcion}}</p>
+                                        <p>Fecha: {{logro.fecha}}</p>
+                                    </div>
+                                </div>
+                                <button class="btn-agregar" (click)="mostrarCamposLogro = !mostrarCamposLogro">
+                                    <span class="material-symbols-outlined">{{ mostrarCamposLogro ? 'remove' : 'add' }}</span>
+                                    {{ mostrarCamposLogro ? 'Cancelar' : 'Agregar Logro' }}
+                                </button>
+                                <div class="campos-entrada" *ngIf="mostrarCamposLogro">
+                                    <div class="form-group">
+                                        <label>Título del Logro</label>
+                                        <input type="text" [(ngModel)]="nuevoLogro.titulo" placeholder="Ingresa el título del logro">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Descripción</label>
+                                        <textarea [(ngModel)]="nuevoLogro.descripcion" placeholder="Describe el logro"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Fecha</label>
+                                        <input type="date" [(ngModel)]="nuevoLogro.fecha">
+                                    </div>
+                                    <button class="btn-guardar" (click)="guardarLogro(); mostrarCamposLogro = false">
+                                        <span class="material-symbols-outlined">save</span>
+                                        {{ logroEditando ? 'Actualizar' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Referencias -->
+                        <div *ngIf="tabActivo === 'referencias'" class="tab-pane active">
+                            <div class="seccion-editor">
+                                <h3>Referencias</h3>
+                                <div class="lista-referencias">
+                                    <div *ngFor="let ref of referencias" class="item-lista">
+                                        <div class="item-header">
+                                            <h4>{{ref.nombre}}</h4>
+                                            <span class="material-symbols-outlined" (click)="editarReferencia(ref)">edit</span>
+                                        </div>
+                                        <p>{{ref.cargo}} - {{ref.institucion}}</p>
+                                        <p>Contacto: {{ref.contacto}}</p>
+                                        <p>{{ref.comentario}}</p>
+                                    </div>
+                                </div>
+                                <button class="btn-agregar" (click)="mostrarCamposReferencia = !mostrarCamposReferencia">
+                                    <span class="material-symbols-outlined">{{ mostrarCamposReferencia ? 'remove' : 'add' }}</span>
+                                    {{ mostrarCamposReferencia ? 'Cancelar' : 'Agregar Referencia' }}
+                                </button>
+                                <div class="campos-entrada" *ngIf="mostrarCamposReferencia">
+                                    <div class="form-group">
+                                        <label>Nombre</label>
+                                        <input type="text" [(ngModel)]="nuevaReferencia.nombre" placeholder="Ingresa el nombre">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Cargo</label>
+                                        <input type="text" [(ngModel)]="nuevaReferencia.cargo" placeholder="Ingresa el cargo">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Institución</label>
+                                        <input type="text" [(ngModel)]="nuevaReferencia.institucion" placeholder="Ingresa la institución">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Contacto</label>
+                                        <input type="text" [(ngModel)]="nuevaReferencia.contacto" placeholder="Ingresa el contacto">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Comentario</label>
+                                        <textarea [(ngModel)]="nuevaReferencia.comentario" placeholder="Ingresa un comentario"></textarea>
+                                    </div>
+                                    <button class="btn-guardar" (click)="guardarReferencia(); mostrarCamposReferencia = false">
+                                        <span class="material-symbols-outlined">save</span>
+                                        {{ referenciaEditando ? 'Actualizar' : 'Guardar' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-cv">
+                    <div class="preview-container">
+                        <iframe [src]="previewUrl" class="preview-iframe"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="tabs-container">
+                    <div class="tabs-header">
+                        <button 
+                            *ngFor="let tab of tabs" 
+                            class="tab-button" 
+                            [class.active]="tabActivo === tab.id"
+                            (click)="cambiarTab(tab.id)">
+                            <span class="material-symbols-outlined">{{tab.icono}}</span>
+                            {{tab.nombre}}
+                        </button>
+                    </div>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-cancelar" (click)="cerrarModalGenerarCV()">Cancelar</button>
+                    <button class="btn-guardar" (click)="generarPDF()">Generar PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Estado de carga -->
 <div class="estado-carga" *ngIf="cargando">
     <p>Cargando información...</p>
