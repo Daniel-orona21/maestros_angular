@@ -347,4 +347,14 @@ export class DashComponent implements OnInit {
       window.open(this.curriculumUrl.toString(), '_blank');
     }
   }
+
+  generarCurriculum() {
+    Swal.fire({
+      title: 'Generando currículum...',
+      text: 'Esta función estará disponible próximamente',
+      icon: 'info',
+      confirmButtonText: 'Entendido',
+      confirmButtonColor: '#527F4B'
+    });
+  }
 }
