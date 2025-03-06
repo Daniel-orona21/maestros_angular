@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService, Usuario, UserUpdateData } from '../../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal, { SweetAlertResult } from 'sweetalert2';
+import { DashService, Usuario, UserUpdateData } from '../../../servicios/dash.service';
 
 @Component({
   selector: 'app-dash',
@@ -19,7 +19,7 @@ export class DashComponent implements OnInit {
   editandoSobreMi = false;
   datosEdicion: UserUpdateData = {};
 
-  constructor(private authService: AuthService) {}
+  constructor(private dashService: DashService) {}
 
   ngOnInit() {
     this.cargarInformacionUsuario();
@@ -28,7 +28,7 @@ export class DashComponent implements OnInit {
   cargarInformacionUsuario() {
     this.cargando = true;
     this.error = false;
-    this.authService.getUserInfo().subscribe({
+    this.dashService.getUserInfo().subscribe({
       next: (data) => {
         this.usuario = data;
         this.cargando = false;
@@ -55,7 +55,9 @@ export class DashComponent implements OnInit {
         nombre: this.usuario.nombre,
         especialidad: this.usuario.especialidad,
         origen: this.usuario.origen,
-        sobre_mi: this.usuario.sobre_mi
+        sobre_mi: this.usuario.sobre_mi,
+        numero_telefono: this.usuario.numero_telefono,
+        domicilio: this.usuario.domicilio
       };
       this.mostrarModal = true;
     }
@@ -74,7 +76,17 @@ export class DashComponent implements OnInit {
     }).then((result: SweetAlertResult) => {
       if (result.isConfirmed) {
         this.mostrarModal = false;
-        this.datosEdicion = {};
+        // Restaurar los datos originales del usuario
+        if (this.usuario) {
+          this.datosEdicion = {
+            nombre: this.usuario.nombre,
+            especialidad: this.usuario.especialidad,
+            origen: this.usuario.origen,
+            sobre_mi: this.usuario.sobre_mi,
+            numero_telefono: this.usuario.numero_telefono,
+            domicilio: this.usuario.domicilio
+          };
+        }
       }
     });
   }
@@ -88,7 +100,7 @@ export class DashComponent implements OnInit {
       }
     });
 
-    this.authService.updateUserInfo(this.datosEdicion).subscribe({
+    this.dashService.updateUserInfo(this.datosEdicion).subscribe({
       next: () => {
         this.cargarInformacionUsuario();
         this.mostrarModal = false;
@@ -184,7 +196,7 @@ export class DashComponent implements OnInit {
       }
     });
 
-    this.authService.updateProfilePicture(file).subscribe({
+    this.dashService.updateProfilePicture(file).subscribe({
       next: (response) => {
         this.cargarInformacionUsuario();
         Swal.fire({

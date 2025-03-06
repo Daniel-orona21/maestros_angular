@@ -52,7 +52,7 @@ export class AuthService {
   }
 
   verifyToken(): Observable<any> {
-    const token = localStorage.getItem('token'); // Obtener el token almacenado
+    const token = localStorage.getItem('token');
     if (!token) {
       return new Observable(observer => {
         observer.error({ error: 'Token no encontrado' });
