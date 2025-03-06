@@ -33,6 +33,39 @@
             {{ usuario?.sobre_mi || 'No hay información registrada sobre el profesor.' }}
         </p>
     </div>
+
+    <div class="curriculum">
+        <div class="curriculum-header">
+            <h2 class="curriculum-titulo">Currículum Vitae</h2>
+            <div class="linea-titulo"></div>
+        </div>
+        
+        <div *ngIf="usuario?.curriculum" class="curriculum-content">
+            <button class="btn-modo">
+                <span class="material-symbols-outlined">visibility</span>
+                Ver currículum
+            </button>
+            <button class="btn-modo">
+                <span class="material-symbols-outlined">edit</span>
+                Actualizar
+            </button>
+        </div>
+
+        <div *ngIf="!usuario?.curriculum" class="sin-curriculum">
+            <span class="material-symbols-outlined documento-icon">description</span>
+            <p>No has subido tu currículum todavía</p>
+            <div class="curriculum-buttons">
+                <button class="btn-modo">
+                    <span class="material-symbols-outlined">upload</span>
+                    Subir currículum
+                </button>
+                <button class="btn-modo">
+                    <span class="material-symbols-outlined">add</span>
+                    Crear currículum
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal de edición -->
