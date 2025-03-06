@@ -1,1 +1,146 @@
-<p>logros works!</p>
+<div class="carta">
+    <div class="encabezado">
+        <h1>Logros</h1>
+        <div class="acciones">
+            <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+                <span class="material-symbols-outlined">edit</span>
+                Editar
+            </button>
+            <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+                <span class="material-symbols-outlined">delete</span>
+                Eliminar
+            </button>
+            <button class="btn-agregar" (click)="abrirModal()">
+                <span class="material-symbols-outlined">add</span>
+                Agregar Logro
+            </button>
+        </div>
+    </div>
+
+    <!-- Estado de carga -->
+    <div class="estado-carga" *ngIf="cargando">
+        <span class="material-symbols-outlined girando">progress_activity</span>
+        <p>Cargando logros...</p>
+    </div>
+
+    <!-- Mensaje de error -->
+    <div class="mensaje-error" *ngIf="error">
+        <span class="material-symbols-outlined">error</span>
+        <p>{{ error }}</p>
+    </div>
+
+    <!-- Mensaje cuando no hay logros -->
+    <div class="sin-experiencias" *ngIf="!cargando && !error && logros.length === 0">
+        <span class="material-symbols-outlined">emoji_events</span>
+        <p>Aún no has agregado ningún logro</p>
+        <p class="subtexto">Haz clic en "Agregar Logro" para comenzar</p>
+    </div>
+
+    <!-- Lista de Logros -->
+    <div class="experiencias-grid" *ngIf="!cargando && !error && logros.length > 0">
+        <div class="experiencia-card" *ngFor="let logro of logros"
+             [class.modo-edicion]="modoEdicion"
+             [class.modo-eliminacion]="modoEliminacion"
+             (click)="handleCardClick(logro)">
+            <div class="card-overlay" *ngIf="modoEdicion || modoEliminacion">
+                <span class="material-symbols-outlined" *ngIf="modoEdicion">edit</span>
+                <span class="material-symbols-outlined" *ngIf="modoEliminacion">delete</span>
+            </div>
+            <div class="card-header">
+                <span class="material-symbols-outlined">emoji_events</span>
+                <h3>{{logro.titulo}}</h3>
+            </div>
+            <div class="card-content">
+                <p class="descripcion" *ngIf="logro.descripcion">{{logro.descripcion}}</p>
+                <p class="fecha">{{formatearFecha(logro.fecha)}}</p>
+                <a *ngIf="logro.archivo" 
+                   [href]="'http://localhost:5001/uploads/' + logro.archivo" 
+                   target="_blank"
+                   class="ver-certificado"
+                   (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined">description</span>
+                    Ver documento
+                </a>
+                <p class="no-documento" *ngIf="!logro.archivo">
+                    <span class="material-symbols-outlined">block</span>
+                    Sin documento adjunto
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar/editar logro -->
+<div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <h2>{{ logroSeleccionado?.id ? 'Editar' : 'Agregar' }} Logro</h2>
+        
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="titulo">Título del logro *</label>
+                <input 
+                    type="text" 
+                    id="titulo" 
+                    [(ngModel)]="logroSeleccionado!.titulo"
+                    [class.error]="erroresValidacion['titulo']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['titulo']">
+                    {{ erroresValidacion['titulo'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción</label>
+                <textarea 
+                    id="descripcion" 
+                    [(ngModel)]="logroSeleccionado!.descripcion"
+                    [class.error]="erroresValidacion['descripcion']">
+                </textarea>
+                <span class="error-mensaje" *ngIf="erroresValidacion['descripcion']">
+                    {{ erroresValidacion['descripcion'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="fecha">Fecha de obtención *</label>
+                <input 
+                    type="date" 
+                    id="fecha" 
+                    [(ngModel)]="logroSeleccionado!.fecha"
+                    [class.error]="erroresValidacion['fecha']">
+                <span class="error-mensaje" *ngIf="erroresValidacion['fecha']">
+                    {{ erroresValidacion['fecha'] }}
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="archivo">
+                    {{ logroSeleccionado?.id ? 'Actualizar archivo (opcional)' : 'Archivo del logro' }}
+                </label>
+                <input 
+                    type="file" 
+                    id="archivo" 
+                    (change)="handleFileInput($event)"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    [class.error]="erroresValidacion['archivo']">
+                <span class="texto-ayuda">Formatos permitidos: PDF, JPG, PNG (máx. 5MB)</span>
+                <span class="error-mensaje" *ngIf="erroresValidacion['archivo']">
+                    {{ erroresValidacion['archivo'] }}
+                </span>
+                <span class="archivo-seleccionado" *ngIf="archivoSeleccionado">
+                    Archivo seleccionado: {{ archivoSeleccionado.name }}
+                </span>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+            <button 
+                class="btn-guardar" 
+                (click)="guardarLogro()" 
+                [disabled]="cargando">
+                <span class="material-symbols-outlined" *ngIf="cargando">sync</span>
+                {{ cargando ? 'Guardando...' : 'Guardar' }}
+            </button>
+        </div>
+    </div>
+</div>

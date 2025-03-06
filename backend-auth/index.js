@@ -1011,6 +1011,157 @@ app.delete('/certificados/:id', verificarToken, (req, res) => {
   );
 });
 
+// Endpoints para Logros
+app.get('/logros', verificarToken, (req, res) => {
+  db.query(
+    'SELECT * FROM logros WHERE usuario_id = ? ORDER BY fecha DESC',
+    [req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al obtener logros:', err);
+        return handleError(res, 500, 'Error al obtener los logros', 'ERROR_DB');
+      }
+      res.json(results);
+    }
+  );
+});
+
+app.post('/logros', verificarToken, uploadCertificado.single('archivo'), (req, res) => {
+  const { titulo, descripcion, fecha } = req.body;
+  const archivo = req.file ? `/certificados/${req.file.filename}` : null;
+
+  if (!titulo || !fecha) {
+    return handleError(res, 400, 'Título y fecha son requeridos', 'ERROR_VALIDACION');
+  }
+
+  db.query(
+    'INSERT INTO logros (usuario_id, titulo, descripcion, fecha, archivo) VALUES (?, ?, ?, ?, ?)',
+    [req.usuario.id, titulo, descripcion || null, fecha, archivo],
+    (err, result) => {
+      if (err) {
+        console.error('Error al crear logro:', err);
+        return handleError(res, 500, 'Error al crear el logro', 'ERROR_DB');
+      }
+
+      db.query(
+        'SELECT * FROM logros WHERE id = ?',
+        [result.insertId],
+        (err, logros) => {
+          if (err) {
+            console.error('Error al obtener el logro creado:', err);
+            return handleError(res, 500, 'Error al obtener el logro creado', 'ERROR_DB');
+          }
+          res.status(201).json(logros[0]);
+        }
+      );
+    }
+  );
+});
+
+app.put('/logros/:id', verificarToken, uploadCertificado.single('archivo'), (req, res) => {
+  const { id } = req.params;
+  const { titulo, descripcion, fecha } = req.body;
+  const archivo = req.file ? `/certificados/${req.file.filename}` : undefined;
+
+  if (!titulo || !fecha) {
+    return handleError(res, 400, 'Título y fecha son requeridos', 'ERROR_VALIDACION');
+  }
+
+  db.query(
+    'SELECT * FROM logros WHERE id = ? AND usuario_id = ?',
+    [id, req.usuario.id],
+    (err, logros) => {
+      if (err) {
+        console.error('Error al verificar logro:', err);
+        return handleError(res, 500, 'Error al verificar el logro', 'ERROR_DB');
+      }
+
+      if (logros.length === 0) {
+        return handleError(res, 404, 'Logro no encontrado', 'ERROR_NOT_FOUND');
+      }
+
+      const archivoAnterior = logros[0].archivo;
+
+      let updateQuery = 'UPDATE logros SET titulo = ?, descripcion = ?, fecha = ?';
+      let updateParams = [titulo, descripcion || null, fecha];
+
+      if (archivo) {
+        updateQuery += ', archivo = ?';
+        updateParams.push(archivo);
+        
+        // Eliminar archivo anterior si existe
+        if (archivoAnterior) {
+          const rutaArchivo = path.join(__dirname, 'uploads', archivoAnterior.replace(/^\/uploads\//, ''));
+          fs.unlink(rutaArchivo, (err) => {
+            if (err) console.error('Error al eliminar archivo anterior:', err);
+          });
+        }
+      }
+
+      updateQuery += ' WHERE id = ? AND usuario_id = ?';
+      updateParams.push(id, req.usuario.id);
+
+      db.query(updateQuery, updateParams, (err) => {
+        if (err) {
+          console.error('Error al actualizar logro:', err);
+          return handleError(res, 500, 'Error al actualizar el logro', 'ERROR_DB');
+        }
+
+        db.query(
+          'SELECT * FROM logros WHERE id = ?',
+          [id],
+          (err, logros) => {
+            if (err) {
+              console.error('Error al obtener el logro actualizado:', err);
+              return handleError(res, 500, 'Error al obtener el logro actualizado', 'ERROR_DB');
+            }
+            res.json(logros[0]);
+          }
+        );
+      });
+    }
+  );
+});
+
+app.delete('/logros/:id', verificarToken, (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    'SELECT * FROM logros WHERE id = ? AND usuario_id = ?',
+    [id, req.usuario.id],
+    (err, logros) => {
+      if (err) {
+        console.error('Error al verificar logro:', err);
+        return handleError(res, 500, 'Error al verificar el logro', 'ERROR_DB');
+      }
+
+      if (logros.length === 0) {
+        return handleError(res, 404, 'Logro no encontrado', 'ERROR_NOT_FOUND');
+      }
+
+      // Eliminar archivo si existe
+      if (logros[0].archivo) {
+        const rutaArchivo = path.join(__dirname, 'uploads', logros[0].archivo);
+        fs.unlink(rutaArchivo, (err) => {
+          if (err) console.error('Error al eliminar archivo:', err);
+        });
+      }
+
+      db.query(
+        'DELETE FROM logros WHERE id = ? AND usuario_id = ?',
+        [id, req.usuario.id],
+        (err) => {
+          if (err) {
+            console.error('Error al eliminar logro:', err);
+            return handleError(res, 500, 'Error al eliminar el logro', 'ERROR_DB');
+          }
+          res.json({ message: 'Logro eliminado correctamente' });
+        }
+      );
+    }
+  );
+});
+
 // Servidor corriendo
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);

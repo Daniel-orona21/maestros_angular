@@ -82,7 +82,16 @@ export class CertificadosComponent implements OnInit {
   abrirModal(certificado?: Certificado) {
     this.mostrarModal = true;
     if (certificado) {
-      this.certificadoSeleccionado = { ...certificado };
+      const fecha = new Date(certificado.fecha_obtencion);
+      const fechaFormateada = fecha.toISOString().split('T')[0];
+      
+      this.certificadoSeleccionado = {
+        id: certificado.id,
+        nombre: certificado.nombre,
+        institucion: certificado.institucion,
+        fecha_obtencion: fechaFormateada,
+        archivo: certificado.archivo
+      };
     } else {
       this.certificadoSeleccionado = {
         nombre: '',
