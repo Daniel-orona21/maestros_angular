@@ -9,7 +9,7 @@ export interface Usuario {
   correo: string;
   especialidad: string;
   foto_perfil: string | null;
-  curriculum: string;
+  curriculum: string | null;
   sobre_mi: string;
   creado_en: string;
   origen: string;
@@ -34,6 +34,10 @@ export class DashService {
 
   constructor(private http: HttpClient) {}
 
+  getApiUrl(): string {
+    return this.apiUrl;
+  }
+
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
@@ -45,7 +49,8 @@ export class DashService {
     }).pipe(
       map(user => ({
         ...user,
-        foto_perfil: user.foto_perfil ? `${this.apiUrl}${user.foto_perfil}` : null
+        foto_perfil: user.foto_perfil ? `${this.apiUrl}${user.foto_perfil}` : null,
+        curriculum: user.curriculum ? `${this.apiUrl}${user.curriculum}` : null
       }))
     );
   }
@@ -68,5 +73,25 @@ export class DashService {
         foto_perfil: response.foto_perfil ? `${this.apiUrl}${response.foto_perfil}` : null
       }))
     );
+  }
+
+  updateCurriculum(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('curriculum', file);
+
+    return this.http.post(`${this.apiUrl}/update-curriculum`, formData, {
+      headers: this.getHeaders()
+    }).pipe(
+      map((response: any) => ({
+        ...response,
+        curriculum: response.curriculum ? `${this.apiUrl}${response.curriculum}` : null
+      }))
+    );
+  }
+
+  deleteCurriculum(): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/delete-curriculum`, {
+      headers: this.getHeaders()
+    });
   }
 } 

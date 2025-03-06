@@ -44,11 +44,15 @@ const verificarToken = (req, res, next) => {
 // Asegurar que el directorio de uploads existe
 const uploadDir = path.join(__dirname, 'uploads/profile-pics');
 const certificadosDir = path.join(__dirname, 'uploads/certificados');
+const curriculumDir = path.join(__dirname, 'uploads/curriculum');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 if (!fs.existsSync(certificadosDir)) {
   fs.mkdirSync(certificadosDir, { recursive: true });
+}
+if (!fs.existsSync(curriculumDir)) {
+  fs.mkdirSync(curriculumDir, { recursive: true });
 }
 
 // Configuración de multer para subida de imágenes de perfil
@@ -96,6 +100,34 @@ const uploadCertificado = multer({
       return cb(null, true);
     }
     cb(new Error('Solo se permiten archivos PDF, DOC, DOCX, JPG, JPEG y PNG'));
+  }
+});
+
+// Configuración de multer para subida de currículum
+const curriculumStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, curriculumDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'curriculum-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const uploadCurriculum = multer({
+  storage: curriculumStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB max
+  },
+  fileFilter: (req, file, cb) => {
+    const filetypes = /pdf|doc|docx/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb(new Error('Solo se permiten archivos PDF, DOC y DOCX'));
   }
 });
 
@@ -1320,6 +1352,90 @@ app.delete('/referencias/:id', verificarToken, (req, res) => {
       );
     }
   );
+});
+
+// Endpoint para actualizar currículum
+app.post('/update-curriculum', verificarToken, uploadCurriculum.single('curriculum'), (req, res) => {
+  try {
+    if (!req.file) {
+      return handleError(res, 400, 'No se ha proporcionado ningún archivo', 'ERROR_NO_FILE');
+    }
+
+    // Obtener el currículum actual
+    db.query('SELECT curriculum FROM usuarios WHERE id = ?', [req.usuario.id], (err, results) => {
+      if (err) {
+        console.error('Error al obtener currículum actual:', err);
+        return handleError(res, 500, 'Error al actualizar el currículum', 'ERROR_DB');
+      }
+
+      // Si existe un currículum anterior, eliminarlo
+      if (results[0]?.curriculum) {
+        const oldPath = path.join(__dirname, results[0].curriculum.replace(/^\/uploads\//, 'uploads/'));
+        if (fs.existsSync(oldPath)) {
+          fs.unlink(oldPath, (err) => {
+            if (err) console.error('Error al eliminar currículum anterior:', err);
+          });
+        }
+      }
+
+      // Actualizar con el nuevo currículum
+      const newCurriculumPath = `/uploads/curriculum/${req.file.filename}`;
+      db.query('UPDATE usuarios SET curriculum = ? WHERE id = ?', 
+        [newCurriculumPath, req.usuario.id],
+        (err) => {
+          if (err) {
+            console.error('Error al actualizar currículum:', err);
+            return handleError(res, 500, 'Error al actualizar el currículum', 'ERROR_DB');
+          }
+          res.json({ 
+            message: 'Currículum actualizado correctamente',
+            curriculum: newCurriculumPath
+          });
+        }
+      );
+    });
+  } catch (error) {
+    console.error('Error al procesar la actualización del currículum:', error);
+    handleError(res, 500, 'Error al procesar la actualización del currículum', 'ERROR_GENERAL');
+  }
+});
+
+// Endpoint para eliminar currículum
+app.delete('/delete-curriculum', verificarToken, (req, res) => {
+  try {
+    // Obtener el currículum actual
+    db.query('SELECT curriculum FROM usuarios WHERE id = ?', [req.usuario.id], (err, results) => {
+      if (err) {
+        console.error('Error al obtener currículum:', err);
+        return handleError(res, 500, 'Error al eliminar el currículum', 'ERROR_DB');
+      }
+
+      // Si existe un currículum, eliminarlo
+      if (results[0]?.curriculum) {
+        const filePath = path.join(__dirname, results[0].curriculum.replace(/^\/uploads\//, 'uploads/'));
+        if (fs.existsSync(filePath)) {
+          fs.unlink(filePath, (err) => {
+            if (err) console.error('Error al eliminar archivo:', err);
+          });
+        }
+      }
+
+      // Actualizar la base de datos
+      db.query('UPDATE usuarios SET curriculum = NULL WHERE id = ?', 
+        [req.usuario.id],
+        (err) => {
+          if (err) {
+            console.error('Error al eliminar currículum de la base de datos:', err);
+            return handleError(res, 500, 'Error al eliminar el currículum', 'ERROR_DB');
+          }
+          res.json({ message: 'Currículum eliminado correctamente' });
+        }
+      );
+    });
+  } catch (error) {
+    console.error('Error al procesar la eliminación del currículum:', error);
+    handleError(res, 500, 'Error al procesar la eliminación del currículum', 'ERROR_GENERAL');
+  }
 });
 
 // Servidor corriendo

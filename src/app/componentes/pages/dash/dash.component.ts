@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Swal, { SweetAlertResult } from 'sweetalert2';
 import { DashService, Usuario, UserUpdateData } from '../../../servicios/dash.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-dash',
@@ -18,8 +19,13 @@ export class DashComponent implements OnInit {
   mostrarModal = false;
   editandoSobreMi = false;
   datosEdicion: UserUpdateData = {};
+  window = window;
+  curriculumUrl: SafeResourceUrl | null = null;
 
-  constructor(private dashService: DashService) {}
+  constructor(
+    private dashService: DashService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit() {
     this.cargarInformacionUsuario();
@@ -31,6 +37,18 @@ export class DashComponent implements OnInit {
     this.dashService.getUserInfo().subscribe({
       next: (data) => {
         this.usuario = data;
+        if (data.curriculum) {
+          const url = data.curriculum.startsWith('http') ? data.curriculum : `${this.dashService.getApiUrl()}${data.curriculum}`;
+          this.curriculumUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+          setTimeout(() => {
+            const objectElement = document.querySelector('.curriculum-iframe') as HTMLObjectElement;
+            if (objectElement) {
+              objectElement.data = url;
+            }
+          }, 0);
+        } else {
+          this.curriculumUrl = null;
+        }
         this.cargando = false;
       },
       error: (error) => {
@@ -218,5 +236,115 @@ export class DashComponent implements OnInit {
         });
       }
     });
+  }
+
+  async actualizarCurriculum() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/pdf,.doc,.docx';
+
+    input.onchange = async (e: any) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // Validar tamaño
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'El archivo no debe superar los 5MB'
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: 'Subiendo currículum...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      this.dashService.updateCurriculum(file).subscribe({
+        next: (response) => {
+          if (response.curriculum) {
+            const url = response.curriculum.startsWith('http') ? response.curriculum : `${this.dashService.getApiUrl()}${response.curriculum}`;
+            this.curriculumUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+          }
+          this.cargarInformacionUsuario();
+          Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: 'El currículum se actualizó correctamente',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#527F4B'
+          });
+        },
+        error: (error) => {
+          console.error('Error al actualizar el currículum:', error);
+          Swal.fire({
+            icon: 'error',
+            title: '¡Error!',
+            text: 'No se pudo actualizar el currículum',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#527F4B'
+          });
+        }
+      });
+    };
+
+    input.click();
+  }
+
+  eliminarCurriculum() {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción no se puede deshacer',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d32f2f',
+      cancelButtonColor: '#666',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Eliminando currículum...',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        this.dashService.deleteCurriculum().subscribe({
+          next: () => {
+            this.cargarInformacionUsuario();
+            Swal.fire({
+              icon: 'success',
+              title: '¡Éxito!',
+              text: 'El currículum se eliminó correctamente',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#527F4B'
+            });
+          },
+          error: (error) => {
+            console.error('Error al eliminar el currículum:', error);
+            Swal.fire({
+              icon: 'error',
+              title: '¡Error!',
+              text: 'No se pudo eliminar el currículum',
+              confirmButtonText: 'Entendido',
+              confirmButtonColor: '#527F4B'
+            });
+          }
+        });
+      }
+    });
+  }
+
+  abrirCurriculum() {
+    if (this.curriculumUrl) {
+      window.open(this.curriculumUrl.toString(), '_blank');
+    }
   }
 }

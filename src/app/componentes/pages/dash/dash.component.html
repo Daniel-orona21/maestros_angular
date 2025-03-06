@@ -41,25 +41,36 @@
         </div>
         
         <div *ngIf="usuario?.curriculum" class="curriculum-content">
-            <button class="btn-modo">
-                <span class="material-symbols-outlined">visibility</span>
-                Ver currículum
-            </button>
-            <button class="btn-modo">
-                <span class="material-symbols-outlined">edit</span>
-                Actualizar
-            </button>
+            <div class="curriculum-preview">
+                <iframe [src]="curriculumUrl" class="curriculum-iframe" frameborder="0">
+                    <p>Tu navegador no puede mostrar el PDF. <a [href]="curriculumUrl" target="_blank">Descargar currículum</a></p>
+                </iframe>
+            </div>
+            <div class="curriculum-actions">
+                <button class="btn-modo" (click)="actualizarCurriculum()">
+                    <span class="material-symbols-outlined">edit</span>
+                    Actualizar currículum
+                </button>
+                <button class="btn-modo" (click)="abrirCurriculum()">
+                    <span class="material-symbols-outlined">visibility</span>
+                    Ver currículum
+                </button>
+                <button class="btn-modo btn-eliminar" (click)="eliminarCurriculum()">
+                    <span class="material-symbols-outlined">delete</span>
+                    Eliminar currículum
+                </button>
+            </div>
         </div>
 
         <div *ngIf="!usuario?.curriculum" class="sin-curriculum">
             <span class="material-symbols-outlined documento-icon">description</span>
             <p>No has subido tu currículum todavía</p>
             <div class="curriculum-buttons">
-                <button class="btn-modo">
+                <button class="btn-modo" (click)="actualizarCurriculum()">
                     <span class="material-symbols-outlined">upload</span>
                     Subir currículum
                 </button>
-                <button class="btn-modo">
+                <button class="btn-modo" (click)="actualizarCurriculum()">
                     <span class="material-symbols-outlined">add</span>
                     Crear currículum
                 </button>
