@@ -158,12 +158,6 @@ export class DashComponent implements OnInit {
         if (data.curriculum) {
           const url = data.curriculum.startsWith('http') ? data.curriculum : `${this.dashService.getApiUrl()}${data.curriculum}`;
           this.curriculumUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-          setTimeout(() => {
-            const objectElement = document.querySelector('.curriculum-iframe') as HTMLObjectElement;
-            if (objectElement) {
-              objectElement.data = url;
-            }
-          }, 0);
         } else {
           this.curriculumUrl = null;
         }
@@ -643,14 +637,9 @@ export class DashComponent implements OnInit {
   }
 
   generarPDF() {
-    // Aquí irá la lógica para generar el PDF
-    Swal.fire({
-      title: 'Generando PDF...',
-      text: 'Esta función estará disponible próximamente',
-      icon: 'info',
-      confirmButtonText: 'Entendido',
-      confirmButtonColor: '#527F4B'
-    });
+    // Aquí deberías generar el PDF y actualizar previewUrl
+    const pdfUrl = 'URL_DEL_PDF_GENERADO'; // Reemplazar con la URL real
+    this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
   }
 
   agregarExperiencia() {
@@ -913,11 +902,6 @@ export class DashComponent implements OnInit {
   // Métodos para guardar
   guardarExperiencia() {
     if (!this.nuevaExperiencia.puesto || !this.nuevaExperiencia.empleador) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor completa los campos requeridos'
-      });
       return;
     }
 
@@ -946,20 +930,10 @@ export class DashComponent implements OnInit {
     }
 
     this.limpiarExperiencia();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: this.experienciaEditando ? 'Experiencia actualizada correctamente' : 'Experiencia agregada correctamente'
-    });
   }
 
   guardarEducacion() {
     if (!this.nuevaEducacion.titulo || !this.nuevaEducacion.institucion) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor completa los campos requeridos'
-      });
       return;
     }
 
@@ -987,20 +961,10 @@ export class DashComponent implements OnInit {
     }
 
     this.limpiarEducacion();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: this.educacionEditando ? 'Educación actualizada correctamente' : 'Educación agregada correctamente'
-    });
   }
 
   guardarHabilidad() {
     if (!this.nuevaHabilidad.descripcion) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor ingresa una habilidad'
-      });
       return;
     }
 
@@ -1019,20 +983,10 @@ export class DashComponent implements OnInit {
     }
 
     this.limpiarHabilidad();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: this.habilidadEditando ? 'Habilidad actualizada correctamente' : 'Habilidad agregada correctamente'
-    });
   }
 
   guardarCertificado() {
     if (!this.nuevoCertificado.nombre || !this.nuevoCertificado.institucion) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor completa los campos requeridos'
-      });
       return;
     }
 
@@ -1053,20 +1007,10 @@ export class DashComponent implements OnInit {
     }
 
     this.limpiarCertificado();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: this.certificadoEditando ? 'Certificado actualizado correctamente' : 'Certificado agregado correctamente'
-    });
   }
 
   guardarLogro() {
     if (!this.nuevoLogro.titulo) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor ingresa el título del logro'
-      });
       return;
     }
 
@@ -1087,20 +1031,10 @@ export class DashComponent implements OnInit {
     }
 
     this.limpiarLogro();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: this.logroEditando ? 'Logro actualizado correctamente' : 'Logro agregado correctamente'
-    });
   }
 
   guardarReferencia() {
     if (!this.nuevaReferencia.nombre || !this.nuevaReferencia.contacto) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor completa los campos requeridos'
-      });
       return;
     }
 
@@ -1123,11 +1057,6 @@ export class DashComponent implements OnInit {
     }
 
     this.limpiarReferencia();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: this.referenciaEditando ? 'Referencia actualizada correctamente' : 'Referencia agregada correctamente'
-    });
   }
 
   // Métodos para limpiar
@@ -1198,5 +1127,71 @@ export class DashComponent implements OnInit {
 
   cambiarTab(tabId: string) {
     this.tabActivo = tabId;
+  }
+
+  establecerComoCV() {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Deseas establecer este PDF como tu currículum vitae?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2196F3',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, establecer',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Aquí deberías implementar la lógica para establecer el PDF como CV
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: 'El PDF se ha establecido como tu currículum vitae',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#2196F3'
+        });
+      }
+    });
+  }
+
+  eliminarExperiencia(experiencia: Experiencia) {
+    const index = this.experiencias.findIndex(e => e.id === experiencia.id);
+    if (index !== -1) {
+      this.experiencias.splice(index, 1);
+    }
+  }
+
+  eliminarEducacion(educacion: Educacion) {
+    const index = this.educacion.findIndex(e => e.id === educacion.id);
+    if (index !== -1) {
+      this.educacion.splice(index, 1);
+    }
+  }
+
+  eliminarHabilidad(habilidad: Habilidad) {
+    const index = this.habilidades.findIndex(h => h.id === habilidad.id);
+    if (index !== -1) {
+      this.habilidades.splice(index, 1);
+    }
+  }
+
+  eliminarCertificado(certificado: Certificado) {
+    const index = this.certificados.findIndex(c => c.id === certificado.id);
+    if (index !== -1) {
+      this.certificados.splice(index, 1);
+    }
+  }
+
+  eliminarLogro(logro: Logro) {
+    const index = this.logros.findIndex(l => l.id === logro.id);
+    if (index !== -1) {
+      this.logros.splice(index, 1);
+    }
+  }
+
+  eliminarReferencia(referencia: Referencia) {
+    const index = this.referencias.findIndex(r => r.id === referencia.id);
+    if (index !== -1) {
+      this.referencias.splice(index, 1);
+    }
   }
 }
