@@ -10,6 +10,7 @@ import { HabilidadesService, Habilidad } from '../../../servicios/habilidades.se
 import { CertificadosService, Certificado } from '../../../servicios/certificados.service';
 import { LogrosService, Logro } from '../../../servicios/logros.service';
 import { ReferenciasService, Referencia } from '../../../servicios/referencias.service';
+import html2pdf from 'html2pdf.js';
 
 interface ExperienciaCV extends Experiencia {
   fecha_inicio: string;
@@ -637,9 +638,27 @@ export class DashComponent implements OnInit {
   }
 
   generarPDF() {
-    // Aquí deberías generar el PDF y actualizar previewUrl
-    const pdfUrl = 'URL_DEL_PDF_GENERADO'; // Reemplazar con la URL real
-    this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(pdfUrl);
+    const element = document.querySelector('.cv-preview');
+    if (!element) return;
+    
+    const opt = {
+        margin: 0,
+        filename: 'mi-cv.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            letterRendering: true
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait' 
+        }
+    };
+
+    html2pdf().set(opt).from(element as HTMLElement).save();
   }
 
   agregarExperiencia() {

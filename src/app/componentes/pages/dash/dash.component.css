@@ -1051,27 +1051,34 @@ p {
     display: grid;
     grid-template-columns: 65mm 1fr;
     width: 210mm;
-    min-height: 297mm;
+    height: 297mm;
     background: white;
     margin: 0;
     box-sizing: border-box;
+    font-size: var(--cv-font-size, 1em);
+    overflow: hidden;
+    position: relative;
+    page-break-after: always;
 }
 
 .cv-sidebar {
     background: #1e3d5c;
     color: white;
     padding: 15mm 8mm;
-    min-height: 297mm;
+    height: 297mm;
     box-sizing: border-box;
-    overflow-y: auto;
+    width: 65mm;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
 .cv-main {
-    padding: 15mm 12mm;
+    padding: 5mm 8mm;
     background: white;
-    min-height: 297mm;
+    height: 297mm;
     box-sizing: border-box;
-    overflow-y: auto;
+    flex: 1;
+    overflow: hidden;
 }
 
 .cv-foto {
@@ -1234,4 +1241,13 @@ p {
     font-family: 'Material Symbols Outlined';
     font-size: 14px;
     color: #1e3d5c;
+}
+
+@media print {
+    .cv-preview {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+    }
 }
