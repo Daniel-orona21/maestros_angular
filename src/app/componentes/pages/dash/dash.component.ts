@@ -649,12 +649,18 @@ export class DashComponent implements OnInit {
             scale: 2,
             useCORS: true,
             logging: false,
-            letterRendering: true
+            letterRendering: true,
+            windowWidth: 210 * 3.78,
+            windowHeight: 297 * 3.78,
+            scrollY: -window.scrollY,
+            height: 297 * 3.78
         },
         jsPDF: { 
             unit: 'mm', 
             format: 'a4', 
-            orientation: 'portrait' 
+            orientation: 'portrait',
+            compress: true,
+            precision: 16
         }
     };
 
