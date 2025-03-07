@@ -1208,6 +1208,8 @@ export class DashComponent implements OnInit {
             this.dashService.updateCurriculum(file).subscribe({
               next: (response) => {
                 this.cargarInformacionUsuario();
+                this.mostrarModalGenerarCV = false;
+                this.cerrarModalGenerarCV();
                 Swal.fire({
                   icon: 'success',
                   title: '¡Éxito!',
@@ -1232,6 +1234,8 @@ export class DashComponent implements OnInit {
             this.dashService.updateCurriculum(file).subscribe({
               next: (response) => {
                 this.cargarInformacionUsuario();
+                this.mostrarModalGenerarCV = false;
+                this.cerrarModalGenerarCV();
                 Swal.fire({
                   icon: 'success',
                   title: '¡Éxito!',
