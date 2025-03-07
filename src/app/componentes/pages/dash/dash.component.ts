@@ -1166,13 +1166,92 @@ export class DashComponent implements OnInit {
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
-        // Aquí deberías implementar la lógica para establecer el PDF como CV
+        const element = document.querySelector('.cv-preview');
+        if (!element) return;
+
         Swal.fire({
-          icon: 'success',
-          title: '¡Éxito!',
-          text: 'El PDF se ha establecido como tu currículum vitae',
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#2196F3'
+          title: 'Generando CV...',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        const opt = {
+          margin: 0,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            logging: true,
+            letterRendering: true,
+            windowWidth: 210 * 3.78,
+            windowHeight: 297 * 3.78,
+            scrollY: -window.scrollY,
+            height: 297 * 3.78
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait',
+            compress: true,
+            precision: 16
+          }
+        };
+
+        const generator = html2pdf();
+        generator.from(element as HTMLElement).set(opt).output('blob').then((blob: Blob) => {
+          const file = new File([blob], 'cv-generado.pdf', { type: 'application/pdf' });
+          
+          if (this.usuario?.curriculum) {
+            // Si ya tiene CV, actualizarlo
+            this.dashService.updateCurriculum(file).subscribe({
+              next: (response) => {
+                this.cargarInformacionUsuario();
+                Swal.fire({
+                  icon: 'success',
+                  title: '¡Éxito!',
+                  text: 'El CV se ha actualizado correctamente',
+                  confirmButtonText: 'Entendido',
+                  confirmButtonColor: '#2196F3'
+                });
+              },
+              error: (error) => {
+                console.error('Error al actualizar el CV:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: '¡Error!',
+                  text: 'No se pudo actualizar el CV',
+                  confirmButtonText: 'Entendido',
+                  confirmButtonColor: '#2196F3'
+                });
+              }
+            });
+          } else {
+            // Si no tiene CV, establecer uno nuevo
+            this.dashService.updateCurriculum(file).subscribe({
+              next: (response) => {
+                this.cargarInformacionUsuario();
+                Swal.fire({
+                  icon: 'success',
+                  title: '¡Éxito!',
+                  text: 'El CV se ha establecido correctamente',
+                  confirmButtonText: 'Entendido',
+                  confirmButtonColor: '#2196F3'
+                });
+              },
+              error: (error) => {
+                console.error('Error al establecer el CV:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: '¡Error!',
+                  text: 'No se pudo establecer el CV',
+                  confirmButtonText: 'Entendido',
+                  confirmButtonColor: '#2196F3'
+                });
+              }
+            });
+          }
         });
       }
     });
