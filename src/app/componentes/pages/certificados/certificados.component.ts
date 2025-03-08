@@ -194,7 +194,8 @@ export class CertificadosComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'Campos inválidos',
-        text: mensajeError
+        text: mensajeError,
+        confirmButtonColor: '#1a3d5c'
       });
       return;
     }
@@ -224,7 +225,8 @@ export class CertificadosComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Agregado!',
-          text: 'El certificado se agregó correctamente'
+          text: 'El certificado se agregó correctamente',
+          confirmButtonColor: '#1a3d5c'
         });
       }
 
@@ -234,7 +236,8 @@ export class CertificadosComponent implements OnInit {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Hubo un problema al guardar el certificado'
+        text: 'Hubo un problema al guardar el certificado',
+        confirmButtonColor: '#1a3d5c'
       });
     } finally {
       this.cargando = false;
@@ -247,8 +250,8 @@ export class CertificadosComponent implements OnInit {
       text: "Esta acción no se puede deshacer",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#527F4B',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#1a3d5c',
+      cancelButtonColor: '#b0b0b0',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -260,7 +263,8 @@ export class CertificadosComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Eliminado!',
-          text: 'El certificado ha sido eliminado'
+          text: 'El certificado ha sido eliminado',
+          confirmButtonColor: '#1a3d5c'
         });
         
         this.cargarCertificados();
@@ -268,7 +272,8 @@ export class CertificadosComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'No se pudo eliminar el certificado'
+          text: 'No se pudo eliminar el certificado',
+          confirmButtonColor: '#1a3d5c'
         });
       }
     }

@@ -31,16 +31,19 @@
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background-color: #f5f5f5;
-    color: #666;
+    background-color: #f0f2f5;
+    color: #1a3d5c;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-size: 14px;
 }
 
 .btn-modo:hover {
-    background-color: #e0e0e0;
+    background-color: #e8eef5;
+    transform: translateY(-2px);
+    color: #0f2844;
 }
 
 .btn-modo.activo {
@@ -56,17 +59,20 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 24px;
-    background-color: #527F4B;
-    color: white;
+    padding: 12px 20px;
+    background-color: #f0f2f5;
+    color: #1a3d5c;
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    font-size: 14px;
 }
 
 .btn-agregar:hover {
-    background-color: #3e6038;
+    background-color: #e8eef5;
+    transform: translateY(-2px);
+    color: #0f2844;
 }
 
 .experiencias-grid {
@@ -102,14 +108,13 @@
 }
 
 .card-header .material-symbols-outlined {
-    color: #527F4B;
+    color: #1b5c96;
 }
 
 .card-header h3 {
     margin: 0;
     color: #333;
     font-size: 18px;
-    font-weight: 500;
 }
 
 .card-overlay {
@@ -215,8 +220,8 @@
     width: 100%;
     padding: 8px;
     background: none;
-    border: 1px dashed #527F4B;
-    color: #527F4B;
+    border: 1px dashed #1a3d5c;
+    color: #1a3d5c;
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -245,7 +250,7 @@
 }
 
 .btn-guardar {
-    background-color: #527F4B;
+    background-color: #1a3d5c;
     color: white;
     border: none;
 }
@@ -253,6 +258,15 @@
 .btn-guardar:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+.btn-guardar:hover:not(:disabled) {
+    background-color: #0f2844;
+}
+
+.form-group input:focus {
+    border-color: #1a3d5c;
+    box-shadow: 0 0 0 2px rgba(26, 61, 92, 0.1);
 }
 
 @keyframes girar {

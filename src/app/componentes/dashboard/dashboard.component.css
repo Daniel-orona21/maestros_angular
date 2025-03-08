@@ -41,7 +41,7 @@ nav ul li::after {
     bottom: -5px;
     width: 0; 
     height: 2px;
-    background-color: rgba(180, 187, 107, 1); 
+    background-color: #1b5c96;
     transition: width 0.15s ease-in-out; 
 }
 

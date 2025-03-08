@@ -243,8 +243,8 @@ export class LogrosComponent implements OnInit {
       text: "Esta acción no se puede deshacer",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#527F4B',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#1a3d5c', // Azul para confirmar
+      cancelButtonColor: '#b0b0b0', // Gris claro para cancelar
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -256,7 +256,8 @@ export class LogrosComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Eliminado!',
-          text: 'El logro ha sido eliminado'
+          text: 'El logro ha sido eliminado',
+          confirmButtonColor: '#1a3d5c' // Azul para el botón OK
         });
         
         this.cargarLogros();
@@ -264,7 +265,8 @@ export class LogrosComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'No se pudo eliminar el logro'
+          text: 'No se pudo eliminar el logro',
+          confirmButtonColor: '#1a3d5c' // Azul para el botón OK
         });
       }
     }

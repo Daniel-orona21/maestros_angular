@@ -174,33 +174,39 @@ export class ExperienciasComponent implements OnInit {
   async eliminarExperiencia(id: number): Promise<void> {
     const result = await Swal.fire({
       title: '¿Estás seguro?',
-      text: "Esta acción no se puede deshacer",
+      text: "No podrás revertir esto",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#527F4B',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#1a3d5c',
+      cancelButtonColor: '#b0b0b0',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
 
     if (result.isConfirmed) {
-      try {
-        await this.experienciaService.eliminarExperiencia(id).toPromise();
-        
-        Swal.fire({
-          icon: 'success',
-          title: '¡Eliminado!',
-          text: 'La experiencia ha sido eliminada'
-        });
-        
-        this.cargarExperiencias();
-      } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo eliminar la experiencia'
-        });
-      }
+      await this.procesarEliminacion(id);
+    }
+  }
+
+  private async procesarEliminacion(id: number): Promise<void> {
+    try {
+      await this.experienciaService.eliminarExperiencia(id).toPromise();
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Eliminado!',
+        text: 'La experiencia ha sido eliminada',
+        confirmButtonColor: '#1a3d5c'
+      });
+      
+      this.cargarExperiencias();
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo eliminar la experiencia',
+        confirmButtonColor: '#1a3d5c'
+      });
     }
   }
 

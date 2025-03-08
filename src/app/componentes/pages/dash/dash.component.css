@@ -429,11 +429,31 @@ p {
 }
 
 .modal-footer {
-  padding-top: 0rem;
-  border-top: 1px solid #dee2e6;
-  display: flex;
-  width: 100%;
-  gap: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    height: min-content;
+}
+
+.btn-cancelar, .btn-guardar {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px; /* Asegurar un ancho mínimo */
+    height: 40px; /* Establecer un alto fijo */
+}
+
+.btn-cancelar:hover {
+    background-color: #e0e0e0;
+}
+
+.btn-guardar:hover {
+    background-color: #163a4f;
 }
 
 .cropper-container {
@@ -900,13 +920,12 @@ p {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1rem;
+
     transition: all 0.3s ease;
 }
 
 .btn-guardar:hover {
     background-color: #e8eef5;
-    transform: translateY(-1px);
     color: #0f2844;
 }
 

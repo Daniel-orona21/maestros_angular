@@ -176,8 +176,8 @@ export class EducacionComponent implements OnInit {
       text: "Esta acción no se puede deshacer",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#527F4B',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#1a3d5c', // Azul para confirmar
+      cancelButtonColor: '#b0b0b0', // Gris claro para cancelar
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -189,7 +189,8 @@ export class EducacionComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Eliminado!',
-          text: 'La información educativa ha sido eliminada'
+          text: 'La información educativa ha sido eliminada',
+          confirmButtonColor: '#1a3d5c' // Azul para el botón OK
         });
         
         this.cargarEducacion();
@@ -197,7 +198,8 @@ export class EducacionComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'No se pudo eliminar la información educativa'
+          text: 'No se pudo eliminar la información educativa',
+          confirmButtonColor: '#1a3d5c' // Azul para el botón OK
         });
       }
     }

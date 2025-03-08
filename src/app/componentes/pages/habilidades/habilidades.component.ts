@@ -177,8 +177,8 @@ export class HabilidadesComponent implements OnInit {
       text: "Esta acción no se puede deshacer",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#527F4B',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#1a3d5c', // Azul para confirmar
+      cancelButtonColor: '#b0b0b0', // Gris claro para cancelar
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -190,7 +190,8 @@ export class HabilidadesComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Eliminado!',
-          text: 'La habilidad ha sido eliminada'
+          text: 'La habilidad ha sido eliminada',
+          confirmButtonColor: '#1a3d5c' // Azul para el botón OK
         });
         
         this.cargarHabilidades();
@@ -198,7 +199,8 @@ export class HabilidadesComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'No se pudo eliminar la habilidad'
+          text: 'No se pudo eliminar la habilidad',
+          confirmButtonColor: '#1a3d5c' // Azul para el botón OK
         });
       }
     }

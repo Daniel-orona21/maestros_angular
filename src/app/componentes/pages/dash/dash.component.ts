@@ -173,7 +173,7 @@ export class DashComponent implements OnInit {
           title: '¡Error!',
           text: 'No se pudo cargar la información del usuario',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#527F4B'
+          confirmButtonColor: '#1a3d5c'
         });
       }
     });
@@ -200,8 +200,8 @@ export class DashComponent implements OnInit {
       text: 'Los cambios no guardados se perderán',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#527F4B',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#1a3d5c',
+      cancelButtonColor: '#b0b0b0',
       confirmButtonText: 'Sí, cerrar',
       cancelButtonText: 'Cancelar'
     }).then((result: SweetAlertResult) => {
@@ -240,7 +240,7 @@ export class DashComponent implements OnInit {
           title: '¡Éxito!',
           text: 'La información se actualizó correctamente',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#527F4B'
+          confirmButtonColor: '#1a3d5c'
         });
       },
       error: (error) => {
@@ -250,7 +250,7 @@ export class DashComponent implements OnInit {
           title: '¡Error!',
           text: 'No se pudo actualizar la información',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#527F4B'
+          confirmButtonColor: '#1a3d5c'
         });
       }
     });
@@ -335,7 +335,7 @@ export class DashComponent implements OnInit {
           title: '¡Éxito!',
           text: 'La foto de perfil se actualizó correctamente',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#527F4B'
+          confirmButtonColor: '#1a3d5c'
         });
       },
       error: (error) => {
@@ -345,7 +345,7 @@ export class DashComponent implements OnInit {
           title: '¡Error!',
           text: 'No se pudo actualizar la foto de perfil',
           confirmButtonText: 'Entendido',
-          confirmButtonColor: '#527F4B'
+          confirmButtonColor: '#1a3d5c'
         });
       }
     });
@@ -390,7 +390,7 @@ export class DashComponent implements OnInit {
             title: '¡Éxito!',
             text: 'El currículum se actualizó correctamente',
             confirmButtonText: 'Entendido',
-            confirmButtonColor: '#527F4B'
+            confirmButtonColor: '#1a3d5c'
           });
         },
         error: (error) => {
@@ -400,7 +400,7 @@ export class DashComponent implements OnInit {
             title: '¡Error!',
             text: 'No se pudo actualizar el currículum',
             confirmButtonText: 'Entendido',
-            confirmButtonColor: '#527F4B'
+            confirmButtonColor: '#1a3d5c'
           });
         }
       });
@@ -437,7 +437,7 @@ export class DashComponent implements OnInit {
               title: '¡Éxito!',
               text: 'El currículum se eliminó correctamente',
               confirmButtonText: 'Entendido',
-              confirmButtonColor: '#527F4B'
+              confirmButtonColor: '#1a3d5c'
             });
           },
           error: (error) => {
@@ -447,7 +447,7 @@ export class DashComponent implements OnInit {
               title: '¡Error!',
               text: 'No se pudo eliminar el currículum',
               confirmButtonText: 'Entendido',
-              confirmButtonColor: '#527F4B'
+              confirmButtonColor: '#1a3d5c'
             });
           }
         });
@@ -570,7 +570,7 @@ export class DashComponent implements OnInit {
       text: 'Los cambios no guardados se perderán',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#527F4B',
+      confirmButtonColor: '#1a3d5c',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Sí, cerrar',
       cancelButtonText: 'Cancelar'
