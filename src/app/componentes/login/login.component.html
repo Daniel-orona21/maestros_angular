@@ -12,23 +12,62 @@
       <div class="inputs">
         <div class="contenedor2">
           <p class="tipo">Nombre</p>
-          <input type="text" [(ngModel)]="nombre" (input)="validarNombre()" placeholder="Nombre" name="nombre" required />
-          <span class="error-message" [class.show-error]="nombreError">{{ nombreError }}</span>
+          <input 
+            type="text" 
+            [(ngModel)]="nombre" 
+            (input)="validarNombre()" 
+            placeholder="Nombre" 
+            name="nombre" 
+            [class.input-error]="nombreError"
+            required 
+          />
+          <div class="error-container" *ngIf="nombreError">
+            <div class="error-message">
+              <i class="material-symbols-outlined">error</i>
+              {{ nombreError }}
+            </div>
+          </div>
         </div>
         <div class="contenedor2">
           <p class="tipo">E-mail</p>
-          <input type="email" [(ngModel)]="correo" (input)="validarCorreo()" placeholder="Email" name="correo" required />
-          <span class="error-message" [class.show-error]="correoError">{{ correoError }}</span>
+          <input 
+            type="email" 
+            [(ngModel)]="correo" 
+            (input)="validarCorreo()" 
+            placeholder="Email" 
+            name="correo" 
+            [class.input-error]="correoError"
+            required 
+          />
+          <div class="error-container" *ngIf="correoError">
+            <div class="error-message">
+              <i class="material-symbols-outlined">error</i>
+              {{ correoError }}
+            </div>
+          </div>
         </div>
         <div class="contenedor2">
           <p class="tipo">Contraseña</p>
           <div class="password-container">
-            <input [type]="mostrarContrasenaRegistro ? 'text' : 'password'" [(ngModel)]="contrasena" (input)="validarContrasena()" placeholder="Contraseña" name="contrasena" required />
+            <input 
+              [type]="mostrarContrasenaRegistro ? 'text' : 'password'" 
+              [(ngModel)]="contrasena" 
+              (input)="validarContrasena()" 
+              placeholder="Contraseña" 
+              name="contrasena" 
+              [class.input-error]="contrasenaError"
+              required 
+            />
             <button type="button" class="toggle-password" (click)="$event.preventDefault(); toggleContrasenaRegistro()">
-              <span class="material-symbols-outlined">{{ mostrarContrasenaRegistro ? 'visibility_off' : 'visibility' }}</span>
+              <i class="material-symbols-outlined">{{ mostrarContrasenaRegistro ? 'visibility_off' : 'visibility' }}</i>
             </button>
           </div>
-          <span class="error-message" [class.show-error]="contrasenaError">{{ contrasenaError }}</span>
+          <div class="error-container" *ngIf="contrasenaError">
+            <div class="error-message">
+              <i class="material-symbols-outlined">error</i>
+              {{ contrasenaError }}
+            </div>
+          </div>
         </div>
       </div>
       <div class="g-recaptcha" data-sitekey="6LeEmOkqAAAAAMS5TvdnuAr5O_jLVn54eo7MuHR_" data-callback="onCaptchaSuccess" data-theme="dark"></div>
