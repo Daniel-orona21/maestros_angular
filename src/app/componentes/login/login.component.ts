@@ -2,7 +2,8 @@ import { Component, ViewChild, ElementRef, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 
 declare const grecaptcha: any;
 declare global {
@@ -13,7 +14,7 @@ declare global {
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, FormsModule], 
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -115,24 +116,45 @@ export class LoginComponent {
 
   registrar() {
     if (!this.captchaResponse) {
-      alert('Por favor, completa el captcha');
+      Swal.fire({
+        title: 'Atención',
+        text: 'Por favor, completa el captcha',
+        icon: 'warning',
+        background: '#2d2d2d',
+        color: '#ffffff',
+        confirmButtonColor: '#1976d2'
+      });
       return;
     }
 
     this.authService.register(
-      this.nombre, 
-      this.correo, 
+      this.nombre,
+      this.correo,
       this.contrasena,
       this.captchaResponse
     ).subscribe({
       next: res => {
-        alert('Registro exitoso');
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Registro exitoso',
+          icon: 'success',
+          background: '#2d2d2d',
+          color: '#ffffff',
+          confirmButtonColor: '#1976d2'
+        });
         this.togglePanel(false);
         this.captchaResponse = '';
         grecaptcha.reset();
       },
       error: err => {
-        alert('Error en el registro: ' + err.error.error);
+        Swal.fire({
+          title: 'Error',
+          text: 'Error en el registro: ' + err.error.error,
+          icon: 'error',
+          background: '#2d2d2d',
+          color: '#ffffff',
+          confirmButtonColor: '#1976d2'
+        });
         this.captchaResponse = '';
         grecaptcha.reset();
       }
@@ -140,20 +162,33 @@ export class LoginComponent {
   }
 
   entrar() {
-    console.log('Valores antes de enviar:', { correo: this.correo, contrasena: this.contrasena }); 
-  
     if (!this.correo || !this.contrasena) {
-      alert('⚠️ Por favor, ingresa tu correo y contraseña.');
-      console.error('❌ Error: No se ingresaron todos los datos');
+      Swal.fire({
+        title: 'Atención',
+        text: 'Por favor, ingresa tu correo y contraseña',
+        icon: 'warning',
+        background: '#2d2d2d',
+        color: '#ffffff',
+        confirmButtonColor: '#1976d2'
+      });
       return;
     }
-  
+
     this.authService.login(this.correo, this.contrasena).subscribe({
       next: res => {
         localStorage.setItem('token', res.token);
         this.router.navigate(['/inicio']);
       },
-      error: err => alert('Error al iniciar sesión: ' + err.error.error)
+      error: err => {
+        Swal.fire({
+          title: 'Error',
+          text: 'Error al iniciar sesión: ' + err.error.error,
+          icon: 'error',
+          background: '#2d2d2d',
+          color: '#ffffff',
+          confirmButtonColor: '#1976d2'
+        });
+      }
     });
   }
 
@@ -182,13 +217,43 @@ export class LoginComponent {
       return;
     }
 
-    // Aquí iría la lógica real para enviar el correo de recuperación
-    console.log('Enviando correo de recuperación a:', this.correoRecuperacion);
-    
-    // Simulamos una respuesta exitosa
-    setTimeout(() => {
-      alert('Se han enviado las instrucciones de recuperación a tu correo electrónico.');
-      this.cerrarModalRecuperacion();
-    }, 1000);
+    Swal.fire({
+      title: 'Enviando...',
+      text: 'Procesando tu solicitud',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+      background: '#2d2d2d',
+      color: '#ffffff'
+    });
+
+    this.authService.requestPasswordReset(this.correoRecuperacion).subscribe({
+      next: (response) => {
+        Swal.fire({
+          title: '¡Enviado!',
+          text: 'Se han enviado las instrucciones de recuperación a tu correo electrónico',
+          icon: 'success',
+          background: '#2d2d2d',
+          color: '#ffffff',
+          confirmButtonColor: '#1976d2'
+        });
+        this.cerrarModalRecuperacion();
+      },
+      error: (error) => {
+        if (error.status === 404) {
+          this.errorRecuperacion = 'No existe una cuenta con este correo electrónico';
+        } else {
+          Swal.fire({
+            title: 'Error',
+            text: 'Error al procesar la solicitud. Por favor, intenta de nuevo más tarde.',
+            icon: 'error',
+            background: '#2d2d2d',
+            color: '#ffffff',
+            confirmButtonColor: '#1976d2'
+          });
+        }
+      }
+    });
   }
 }

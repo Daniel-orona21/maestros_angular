@@ -20,6 +20,7 @@
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.12.0",
     "ngx-image-cropper": "^9.1.2",
+    "nodemailer": "^6.10.0",
     "sharp": "^0.33.5",
     "sweetalert2": "^11.17.2"
   }

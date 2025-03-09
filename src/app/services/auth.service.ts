@@ -43,6 +43,19 @@ export class AuthService {
     });
   }
 
+  // Método para solicitar recuperación de contraseña
+  requestPasswordReset(correo: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/request-password-reset`, { correo });
+  }
+
+  // Método para resetear la contraseña con el token
+  resetPassword(token: string, nuevaContrasena: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/reset-password`, { 
+      token, 
+      nuevaContrasena 
+    });
+  }
+
   login(correo: string, contrasena: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { correo, contrasena });
   }

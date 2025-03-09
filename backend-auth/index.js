@@ -9,11 +9,55 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET;
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
+
+// Configuración del transporter de nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+// Función para enviar correo de recuperación
+const enviarCorreoRecuperacion = async (correo, nombre, token) => {
+  const resetUrl = `http://localhost:4200/reset-password?token=${token}`;
+  
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: correo,
+    subject: 'Recuperación de Contraseña - Sistema de Maestros UTD',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #333;">Recuperación de Contraseña</h2>
+        <p>Hola ${nombre},</p>
+        <p>Has solicitado restablecer tu contraseña. Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${resetUrl}" style="background-color: #1976d2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            Restablecer Contraseña
+          </a>
+        </div>
+        <p>Si no solicitaste este cambio, puedes ignorar este correo. El enlace expirará en 1 hora por seguridad.</p>
+        <p>Saludos,<br>Equipo de Sistema de Maestros UTD</p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Correo de recuperación enviado a:', correo);
+    return true;
+  } catch (error) {
+    console.error('❌ Error al enviar correo:', error);
+    return false;
+  }
+};
 
 // Función helper para manejar errores
 const handleError = (res, status, message, errorCode = 'ERROR_GENERAL') => {
@@ -226,6 +270,119 @@ app.post('/login', (req, res) => {
       res.json({ message: 'Login exitoso', token });
     });
   });
+
+// 🔄 Solicitar recuperación de contraseña
+app.post('/request-password-reset', async (req, res) => {
+  const { correo } = req.body;
+
+  if (!correo) {
+    return res.status(400).json({ error: 'El correo es requerido' });
+  }
+
+  try {
+    // Verificar si el usuario existe
+    const sql = 'SELECT id, nombre FROM usuarios WHERE correo = ?';
+    db.query(sql, [correo], async (err, results) => {
+      if (err) {
+        console.error('Error al buscar usuario:', err);
+        return res.status(500).json({ error: 'Error en el servidor' });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'No existe una cuenta con este correo' });
+      }
+
+      const usuario = results[0];
+      
+      // Generar token único para reseteo (expira en 1 hora)
+      const resetToken = jwt.sign(
+        { id: usuario.id, action: 'password_reset' },
+        JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      // Guardar el token en la base de datos
+      const updateSql = 'UPDATE usuarios SET reset_token = ?, reset_token_expires = DATE_ADD(NOW(), INTERVAL 1 HOUR) WHERE id = ?';
+      db.query(updateSql, [resetToken, usuario.id], async (err) => {
+        if (err) {
+          console.error('Error al guardar token:', err);
+          return res.status(500).json({ error: 'Error al procesar la solicitud' });
+        }
+
+        // Enviar el correo de recuperación
+        const emailEnviado = await enviarCorreoRecuperacion(correo, usuario.nombre, resetToken);
+        
+        if (!emailEnviado) {
+          return res.status(500).json({ error: 'Error al enviar el correo de recuperación' });
+        }
+
+        res.json({ 
+          message: 'Se han enviado las instrucciones a tu correo'
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error en recuperación de contraseña:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
+
+// 🔄 Resetear contraseña con token
+app.post('/reset-password', async (req, res) => {
+  const { token, nuevaContrasena } = req.body;
+
+  if (!token || !nuevaContrasena) {
+    return res.status(400).json({ error: 'Token y nueva contraseña son requeridos' });
+  }
+
+  try {
+    // Verificar el token
+    jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ error: 'Token inválido o expirado' });
+      }
+
+      // Verificar que el token existe y no ha expirado
+      const sql = `
+        SELECT id 
+        FROM usuarios 
+        WHERE id = ? 
+          AND reset_token = ? 
+          AND reset_token_expires > NOW()
+      `;
+
+      db.query(sql, [decoded.id, token], async (err, results) => {
+        if (err || results.length === 0) {
+          return res.status(401).json({ error: 'Token inválido o expirado' });
+        }
+
+        // Hashear la nueva contraseña
+        const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+
+        // Actualizar la contraseña y limpiar el token
+        const updateSql = `
+          UPDATE usuarios 
+          SET contrasena = ?, 
+              reset_token = NULL, 
+              reset_token_expires = NULL 
+          WHERE id = ?
+        `;
+
+        db.query(updateSql, [hashedPassword, decoded.id], (err) => {
+          if (err) {
+            console.error('Error al actualizar contraseña:', err);
+            return res.status(500).json({ error: 'Error al actualizar la contraseña' });
+          }
+
+          res.json({ message: 'Contraseña actualizada correctamente' });
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Error al resetear contraseña:', error);
+    res.status(500).json({ error: 'Error al procesar la solicitud' });
+  }
+});
 
 // 🟠 Logout (no es necesario en backend, solo indica éxito)
 app.post('/logout', (req, res) => {
