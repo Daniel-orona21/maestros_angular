@@ -1,28 +1,47 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { DashboardComponent } from "../dashboard/dashboard.component";
 import { ControlEscolarComponent } from "../control-escolar/control-escolar.component";
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-inicio',
-  imports: [ControlEscolarComponent, DashboardComponent, CommonModule],
+  imports: [ControlEscolarComponent, DashboardComponent, CommonModule, FormsModule],
   templateUrl: './inicio.component.html',
   styleUrl: './inicio.component.css'
 })
 export class InicioComponent {
   vistaSeleccionada: string | null = null;
   breadcrumb: string | null = null;
+  searchTerm: string = '';
+  showSuggestions: boolean = false;
+  suggestions: string[] = [
+    'Mi perfil',
+    'Mis alumnos',
+    'Dashboard',
+    'Experiencias',
+    'Educación',
+    'Habilidades',
+    'Certificados',
+    'Logros',
+    'Referencias'
+  ];
+  filteredSuggestions: string[] = [];
+  selectedIndex: number = -1;
 
   @ViewChild(DashboardComponent) dashboardComponent!: DashboardComponent;
   @ViewChild(ControlEscolarComponent) controlEscolarComponent!: ControlEscolarComponent;
+  @ViewChild('searchContainer') searchContainer!: ElementRef;
 
   constructor(private authService: AuthService, private router: Router) {}
 
   seleccionarVista(vista: string) {
     this.vistaSeleccionada = vista;
     this.breadcrumb = vista;
+    this.searchTerm = '';
+    this.showSuggestions = false;
   }
 
   ngOnInit() {
@@ -32,15 +51,16 @@ export class InicioComponent {
       },
       error: (error) => {
         console.warn('Token inválido:', error);
-        this.router.navigate(['/login']); // Redirige a la página de inicio de sesión
+        this.router.navigate(['/login']);
       }
     });
   }
 
-
   resetVista() {
     this.vistaSeleccionada = null;
     this.breadcrumb = null;
+    this.searchTerm = '';
+    this.showSuggestions = false;
   }
 
   resetDashboard() {
@@ -76,5 +96,86 @@ export class InicioComponent {
     } else {
       this.resetDashboard();
     }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyDown(event: KeyboardEvent) {
+    if (!this.showSuggestions) return;
+
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredSuggestions.length - 1);
+        if (this.selectedIndex === -1) this.selectedIndex = 0;
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
+        break;
+      case 'Enter':
+        event.preventDefault();
+        if (this.selectedIndex >= 0 && this.selectedIndex < this.filteredSuggestions.length) {
+          this.selectSuggestion(this.filteredSuggestions[this.selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.showSuggestions = false;
+        this.selectedIndex = -1;
+        break;
+    }
+  }
+
+  onSearch() {
+    if (!this.searchTerm) {
+      this.filteredSuggestions = [...this.suggestions];
+    } else {
+      this.filteredSuggestions = this.suggestions.filter(s => 
+        s.toLowerCase().includes(this.searchTerm.toLowerCase()));
+    }
+    this.showSuggestions = true;
+    this.selectedIndex = -1;
+  }
+
+  onFocus() {
+    this.showSuggestions = true;
+    this.selectedIndex = -1;
+    if (!this.searchTerm) {
+      this.filteredSuggestions = [...this.suggestions];
+    }
+  }
+
+  selectSuggestion(suggestion: string) {
+    this.selectedIndex = -1;
+    if (suggestion === 'Mis alumnos') {
+      this.seleccionarVista('Control escolar');
+    } else if (suggestion === 'Mi perfil') {
+      this.seleccionarVista('Mi perfil');
+      if (this.dashboardComponent) {
+        this.dashboardComponent.resetToDashboard();
+      }
+    } else {
+      this.seleccionarVista('Mi perfil');
+      setTimeout(() => {
+        if (this.dashboardComponent) {
+          this.dashboardComponent.setSelected(suggestion);
+        }
+      });
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.searchContainer && !this.searchContainer.nativeElement.contains(event.target)) {
+      this.showSuggestions = false;
+    }
+  }
+
+  onBlur() {
+    setTimeout(() => {
+      if (!this.searchContainer.nativeElement.contains(document.activeElement)) {
+        this.showSuggestions = false;
+      }
+    }, 200);
   }
 }

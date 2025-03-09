@@ -53,11 +53,17 @@ header ul li {
 
 .contenedorBuscar input{
     border: none;
-    border-bottom: 3px solid #0f385b;
+    border-bottom: 3px solid #bdbdbd;
     width: 500px;
     height: 40px;
     padding: 5px 10px;
     font-size: 14px;
+    transition: all 0.3s ease;
+    color: #424242;
+}
+
+.contenedorBuscar input::placeholder {
+    color: #757575;
 }
 
 .contenedorBuscar input:focus{
@@ -67,8 +73,6 @@ header ul li {
     box-shadow: none;
 }
 
-
-
 .contenedorBuscar {
     position: relative;
     display: flex;
@@ -76,19 +80,21 @@ header ul li {
     justify-content: center;
 }
 
-.contenedorBuscar span  {
+.contenedorBuscar span {
     position: absolute;
     right: 10px;
-    transition: all .3s ease;
+    transition: all 0.3s ease;
     cursor: pointer;
+    color: #757575;
 }
 
 .contenedorBuscar span:hover, .usuario span:hover {
-    color: rgba(0, 0, 0, 0.53);
+    color: #1562a4;
 }
+
 .contenedorBuscar span:active, .usuario span:active {
-    color: rgb(0, 0, 0);
-    transition: none;
+    color: #1562a4;
+    transform: scale(0.95);
 }
 
 .breadCrumb {
@@ -139,7 +145,6 @@ header ul li {
     transition: all .5s ease;
 }
 
-
 .dash:hover, .control:hover {
     flex: 1.5;
 }
@@ -153,7 +158,6 @@ header ul li {
     transform: scale(1.1);
     transition: all .5s ease;
 }
-
 
 .dash button, .control button {
     z-index: 99;
@@ -173,5 +177,90 @@ header ul li {
 .dash button:hover, .control button:hover {
     box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.7);
     transform: scale(1.05); 
+}
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-height: 350px;
+  overflow-y: auto;
+  z-index: 1000;
+  padding: 8px 0;
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #333;
+  font-size: 14px;
+}
+
+.suggestion-item:hover, .suggestion-item.selected {
+  background-color: #f0f7ff;
+  color: #1562a4;
+}
+
+.suggestion-item .material-symbols-outlined {
+  font-size: 20px;
+  position: static;
+  color: #757575;
+  transition: all 0.2s ease;
+}
+
+.suggestion-item:hover .material-symbols-outlined,
+.suggestion-item.selected .material-symbols-outlined {
+  color: #1562a4;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.suggestions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.suggestions::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.suggestions {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.usuario {
+    background-color: transparent;
+    display: flex;
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.usuario span {
+    font-size: 32px;
+    color: #757575;
+    transition: all 0.3s ease;
+}
+
+.usuario:hover span {
+    color: #1562a4;
+}
+
+.usuario:active span {
+    transform: scale(0.95);
 }
 

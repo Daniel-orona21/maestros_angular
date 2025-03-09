@@ -13,12 +13,49 @@
         <li></li>
         <li>
           <div class="liderecho">
-            <div class="contenedorBuscar">
-              <input class="buscador" type="text" placeholder="Buscar" />
-              <span class="material-symbols-outlined">search</span>
+            <div class="contenedorBuscar" #searchContainer>
+              <input 
+                class="buscador" 
+                type="text" 
+                placeholder="Buscar" 
+                [(ngModel)]="searchTerm"
+                (input)="onSearch()"
+                (focus)="onFocus()"
+                (blur)="onBlur()"
+              />
+              <span 
+                class="material-symbols-outlined"
+                *ngIf="searchTerm"
+                (click)="searchTerm = ''; showSuggestions = false; filteredSuggestions = []"
+              >close</span>
+              <span 
+                class="material-symbols-outlined"
+                *ngIf="!searchTerm"
+              >search</span>
+              
+              <!-- Suggestions dropdown -->
+              <div class="suggestions" *ngIf="showSuggestions && filteredSuggestions.length > 0">
+                <div 
+                  class="suggestion-item" 
+                  *ngFor="let suggestion of filteredSuggestions; let i = index"
+                  (click)="selectSuggestion(suggestion)"
+                  [class.selected]="i === selectedIndex"
+                >
+                  <span class="material-symbols-outlined">{{ suggestion === 'Mi perfil' ? 'person' : 
+                    suggestion === 'Mis alumnos' ? 'groups' : 
+                    suggestion === 'Dashboard' ? 'dashboard' :
+                    suggestion === 'Experiencias' ? 'work' :
+                    suggestion === 'Educación' ? 'school' :
+                    suggestion === 'Habilidades' ? 'psychology' :
+                    suggestion === 'Certificados' ? 'workspace_premium' :
+                    suggestion === 'Logros' ? 'emoji_events' :
+                    'description' }}</span>
+                  {{ suggestion }}
+                </div>
+              </div>
             </div>
-            <div class="usuario">
-              <span class="material-symbols-outlined">person</span>
+            <div class="usuario" (click)="selectSuggestion('Mi perfil')" title="Mi perfil">
+              <span class="material-symbols-outlined">account_circle</span>
             </div>
           </div>
         </li>
