@@ -1,1 +1,109 @@
-<p>ajustes works!</p>
+<div class="ajustes-container">
+  <div class="ajustes-section">
+    <h2>Apariencia</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">palette</span>
+        <div class="setting-text">
+          <h3>Tema</h3>
+          <p>Personaliza el aspecto de la aplicación</p>
+        </div>
+      </div>
+      <div class="theme-selector">
+        <button [class.active]="currentTheme === 'light'" (click)="setTheme('light')">
+          <span class="material-symbols-outlined">light_mode</span>
+          Claro
+        </button>
+        <button [class.active]="currentTheme === 'dark'" (click)="setTheme('dark')">
+          <span class="material-symbols-outlined">dark_mode</span>
+          Oscuro
+        </button>
+        <button [class.active]="currentTheme === 'system'" (click)="setTheme('system')">
+          <span class="material-symbols-outlined">devices</span>
+          Sistema
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ajustes-section">
+    <h2>Cuenta y Seguridad</h2>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">key</span>
+        <div class="setting-text">
+          <h3>Contraseña</h3>
+          <p>Cambia tu contraseña</p>
+        </div>
+      </div>
+      <button class="action-button" (click)="cambiarPassword()">
+        <span class="material-symbols-outlined">lock_reset</span>
+        Cambiar
+      </button>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">notifications</span>
+        <div class="setting-text">
+          <h3>Notificaciones</h3>
+          <p>Configura tus preferencias de notificación</p>
+        </div>
+      </div>
+      <button class="action-button" (click)="configurarNotificaciones()">
+        <span class="material-symbols-outlined">settings</span>
+        Configurar
+      </button>
+    </div>
+  </div>
+
+  <div class="ajustes-section">
+    <h2>Preferencias</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">language</span>
+        <div class="setting-text">
+          <h3>Idioma</h3>
+          <p>Selecciona el idioma de la aplicación</p>
+        </div>
+      </div>
+      <select class="select-input" [(ngModel)]="selectedLanguage">
+        <option value="es">Español</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">schedule</span>
+        <div class="setting-text">
+          <h3>Zona Horaria</h3>
+          <p>Ajusta tu zona horaria</p>
+        </div>
+      </div>
+      <select class="select-input" [(ngModel)]="selectedTimezone">
+        <option value="America/Mexico_City">Ciudad de México (UTC-6)</option>
+        <option value="America/Monterrey">Monterrey (UTC-6)</option>
+        <option value="America/Tijuana">Tijuana (UTC-8)</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="ajustes-section">
+    <h2>Sesión</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">logout</span>
+        <div class="setting-text">
+          <h3>Cerrar Sesión</h3>
+          <p>Salir de la aplicación</p>
+        </div>
+      </div>
+      <button class="action-button danger" (click)="cerrarSesion()">
+        <span class="material-symbols-outlined">logout</span>
+        Salir
+      </button>
+    </div>
+  </div>
+</div>
