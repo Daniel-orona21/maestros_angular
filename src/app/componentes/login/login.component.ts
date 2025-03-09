@@ -28,7 +28,12 @@ export class LoginComponent {
   password: string = '';
   captchaResponse: string = '';
 
-  // Nuevas propiedades para validación
+  // Propiedades para el modal de recuperación
+  modalRecuperacionVisible: boolean = false;
+  correoRecuperacion: string = '';
+  errorRecuperacion: string = '';
+
+  // Propiedades para validación
   correoError: string = '';
   contrasenaError: string = '';
   nombreError: string = '';
@@ -150,5 +155,40 @@ export class LoginComponent {
       },
       error: err => alert('Error al iniciar sesión: ' + err.error.error)
     });
+  }
+
+  // Métodos para el modal de recuperación
+  mostrarModalRecuperacion(): void {
+    this.modalRecuperacionVisible = true;
+    this.correoRecuperacion = '';
+    this.errorRecuperacion = '';
+  }
+
+  cerrarModalRecuperacion(): void {
+    this.modalRecuperacionVisible = false;
+    this.correoRecuperacion = '';
+    this.errorRecuperacion = '';
+  }
+
+  enviarRecuperacion(): void {
+    if (!this.correoRecuperacion) {
+      this.errorRecuperacion = 'Por favor, ingresa tu correo electrónico';
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(this.correoRecuperacion)) {
+      this.errorRecuperacion = 'Por favor, ingresa un correo electrónico válido';
+      return;
+    }
+
+    // Aquí iría la lógica real para enviar el correo de recuperación
+    console.log('Enviando correo de recuperación a:', this.correoRecuperacion);
+    
+    // Simulamos una respuesta exitosa
+    setTimeout(() => {
+      alert('Se han enviado las instrucciones de recuperación a tu correo electrónico.');
+      this.cerrarModalRecuperacion();
+    }, 1000);
   }
 }

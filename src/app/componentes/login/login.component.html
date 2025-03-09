@@ -57,6 +57,7 @@
           </div>
         </div>
       </div>
+      <a class="recuperar-link" (click)="mostrarModalRecuperacion()">¿Olvidaste tu contraseña?</a>
     </div>
     <button type="submit">Entrar</button>
   </form>
@@ -85,5 +86,38 @@
   <div class="fondo">
     <div class="mapa-blur"></div> 
     <div class="mapa" #loginMapContainer id="loginMap"></div>
+  </div>
+</div>
+
+<!-- Modal de Recuperación de Contraseña -->
+<div class="modal-recuperacion" *ngIf="modalRecuperacionVisible">
+  <div class="modal-content-recuperacion">
+    <div class="modal-header-recuperacion">
+      <h2>Recuperar Contraseña</h2>
+    </div>
+    <div class="modal-body-recuperacion">
+      <div class="icon-container">
+        <i class="material-symbols-outlined icon-email">lock_reset</i>
+      </div>
+      <p>Ingresa tu correo electrónico y te enviaremos las instrucciones para recuperar tu contraseña.</p>
+      <div class="input-container">
+        <div class="input-wrapper">
+          <i class="material-symbols-outlined input-icon">mail</i>
+          <input type="email" [(ngModel)]="correoRecuperacion" placeholder="Correo electrónico" name="correoRecuperacion" />
+        </div>
+      </div>
+      <div class="error-message" *ngIf="errorRecuperacion">
+        <i class="material-symbols-outlined">error</i>
+        {{ errorRecuperacion }}
+      </div>
+    </div>
+    <div class="modal-footer-recuperacion">
+      <button class="btn-cancelar" (click)="cerrarModalRecuperacion()">
+        Cancelar
+      </button>
+      <button class="btn-enviar" (click)="enviarRecuperacion()">
+        Enviar instrucciones
+      </button>
+    </div>
   </div>
 </div>
