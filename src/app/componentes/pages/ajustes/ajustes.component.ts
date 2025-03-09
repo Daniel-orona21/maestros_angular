@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
+import { ThemeService } from '../../../services/theme.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-ajustes',
@@ -11,41 +13,65 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './ajustes.component.html',
   styleUrl: './ajustes.component.css'
 })
-export class AjustesComponent implements OnInit {
+export class AjustesComponent implements OnInit, OnDestroy {
   currentTheme: 'light' | 'dark' | 'system' = 'light';
   selectedLanguage: string = 'es';
   selectedTimezone: string = 'America/Mexico_City';
+  private themeSubscription: Subscription;
 
   constructor(
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private themeService: ThemeService
+  ) {
+    this.themeSubscription = this.themeService.isDarkTheme$.subscribe(
+      isDark => {
+        if (isDark) {
+          document.body.classList.add('dark-theme');
+        } else {
+          document.body.classList.remove('dark-theme');
+        }
+      }
+    );
+  }
 
   ngOnInit() {
-    // Cargar preferencias guardadas
     this.loadSavedPreferences();
   }
 
-  loadSavedPreferences() {
-    // Aquí cargaríamos las preferencias guardadas del usuario
-    // Por ahora usamos valores por defecto
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      this.currentTheme = savedTheme as 'light' | 'dark' | 'system';
+  ngOnDestroy() {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
     }
+  }
+
+  loadSavedPreferences() {
+    // Cargar el tema guardado
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    this.setTheme(savedTheme as 'light' | 'dark' | 'system');
+
+    // Cargar otras preferencias
+    this.selectedLanguage = localStorage.getItem('language') || 'es';
+    this.selectedTimezone = localStorage.getItem('timezone') || 'America/Mexico_City';
   }
 
   setTheme(theme: 'light' | 'dark' | 'system') {
     this.currentTheme = theme;
     localStorage.setItem('theme', theme);
     
-    // Aplicar el tema
     if (theme === 'system') {
-      // Detectar preferencia del sistema
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      this.themeService.setDarkTheme(prefersDark);
+      
+      // Agregar listener para cambios en el tema del sistema
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      mediaQuery.addEventListener('change', (e) => {
+        if (this.currentTheme === 'system') {
+          this.themeService.setDarkTheme(e.matches);
+        }
+      });
     } else {
-      document.documentElement.setAttribute('data-theme', theme);
+      this.themeService.setDarkTheme(theme === 'dark');
     }
   }
 

@@ -490,3 +490,88 @@ p {
     transform: scale(0.98);
 }
 
+/* Dark Theme Styles */
+:host-context(.dark-theme) {
+  .carta {
+    background-color: #1a1a1a;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .encabezado h1 {
+    color: #e0e0e0;
+  }
+
+  .btn-modo {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+  }
+
+  .btn-modo:hover {
+    background-color: #363636;
+    color: #1562a4;
+  }
+
+  .btn-modo.activo {
+    background-color: #1562a4;
+    color: #ffffff;
+  }
+
+  .btn-agregar {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+  }
+
+  .btn-agregar:hover {
+    background-color: #363636;
+    color: #1562a4;
+    transform: translateY(-2px);
+  }
+
+  .experiencia-card {
+    background-color: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .experiencia-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .card-header h3 {
+    color: #e0e0e0;
+  }
+
+  .card-header span {
+    color: #1562a4;
+  }
+
+  .puesto {
+    color: #e0e0e0;
+  }
+
+  .area {
+    color: #9e9e9e;
+  }
+
+  .especialidad {
+    color: #9e9e9e;
+  }
+
+  .estado-carga,
+  .mensaje-error,
+  .sin-experiencias {
+    color: #9e9e9e;
+  }
+
+  .sin-experiencias .subtexto {
+    color: #757575;
+  }
+
+  .material-icons {
+    color: #e0e0e0;
+  }
+
+  .edit-button:hover .material-icons {
+    color: #1562a4;
+  }
+}
+

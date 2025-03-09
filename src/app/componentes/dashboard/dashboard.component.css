@@ -82,3 +82,30 @@ nav ul li:hover::after, nav ul li.active::after {
     font-size: 28px;
     font-weight: 100;
 }
+
+/* Dark Theme Styles */
+:host-context(.dark-theme) {
+  .cuerpo {
+    background-color: #121212;
+  }
+
+  nav {
+    background-color: #1a1a1a;
+  }
+
+  nav ul li {
+    color: #e0e0e0;
+  }
+
+  nav ul li::after {
+    background-color: #1562a4;
+  }
+
+  .componentes {
+    background-color: #121212;
+  }
+
+  .usuario span {
+    color: #e0e0e0;
+  }
+}

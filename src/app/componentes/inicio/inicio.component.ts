@@ -1,10 +1,11 @@
-import { Component, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener, OnInit } from '@angular/core';
 import { DashboardComponent } from "../dashboard/dashboard.component";
 import { ControlEscolarComponent } from "../control-escolar/control-escolar.component";
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ThemeService } from '../../services/theme.service';
 
 @Component({
   selector: 'app-inicio',
@@ -12,7 +13,7 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './inicio.component.html',
   styleUrl: './inicio.component.css'
 })
-export class InicioComponent {
+export class InicioComponent implements OnInit {
   vistaSeleccionada: string | null = null;
   breadcrumb: string | null = null;
   searchTerm: string = '';
@@ -35,7 +36,11 @@ export class InicioComponent {
   @ViewChild(ControlEscolarComponent) controlEscolarComponent!: ControlEscolarComponent;
   @ViewChild('searchContainer') searchContainer!: ElementRef;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService, 
+    private router: Router,
+    private themeService: ThemeService
+  ) {}
 
   seleccionarVista(vista: string) {
     this.vistaSeleccionada = vista;
@@ -52,6 +57,15 @@ export class InicioComponent {
       error: (error) => {
         console.warn('Token inválido:', error);
         this.router.navigate(['/login']);
+      }
+    });
+
+    // Suscribirse a cambios en el tema
+    this.themeService.isDarkTheme$.subscribe(isDark => {
+      if (isDark) {
+        document.body.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
       }
     });
   }

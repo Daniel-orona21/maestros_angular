@@ -275,3 +275,79 @@ header ul li {
     transform: scale(0.95);
 }
 
+/* Dark Theme Styles */
+:host-context(.dark-theme) {
+  /* Header */
+  header {
+    background-color: #1a1a1a;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Breadcrumb */
+  .breadCrumb {
+    color: #e0e0e0;
+  }
+
+  .breadcrumb-link {
+    color: #9e9e9e;
+  }
+
+  .breadcrumb-link:hover {
+    color: #1562a4;
+  }
+
+  .breadcrumb-link:last-of-type {
+    color: #1562a4;
+  }
+
+  /* Search */
+  .contenedorBuscar input {
+    border-bottom-color: #424242;
+    color: #e0e0e0;
+    background-color: #1a1a1a;
+  }
+
+  .contenedorBuscar input::placeholder {
+    color: #9e9e9e;
+  }
+
+  .contenedorBuscar span {
+    color: #9e9e9e;
+  }
+
+  /* Suggestions */
+  .suggestions {
+    background-color: #1a1a1a;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .suggestion-item {
+    color: #e0e0e0;
+  }
+
+  .suggestion-item:hover, 
+  .suggestion-item.selected {
+    background-color: #2d2d2d;
+    color: #1562a4;
+  }
+
+  .suggestion-item .material-symbols-outlined {
+    color: #9e9e9e;
+  }
+
+  /* User Icon */
+  .usuario span {
+    color: #9e9e9e;
+  }
+
+  /* Scrollbar */
+  .suggestions::-webkit-scrollbar-thumb {
+    background-color: #424242;
+  }
+
+  /* Background */
+  .inicio {
+    background-color: #121212;
+  }
+}
+
