@@ -6,7 +6,13 @@
             <img src="assets/logo.png" alt="logo" />
             <div class="breadCrumb">
               <span (click)="resetVista()" class="breadcrumb-link">Inicio</span> 
-              <span *ngIf="breadcrumb" (click)="handleBreadcrumbClick()" class="breadcrumb-link"> > {{ breadcrumb }}</span>
+              <ng-container *ngIf="breadcrumb">
+                <span class="separator"> > </span>
+                <ng-container *ngFor="let part of breadcrumb.split(' > '); let i = index; let last = last">
+                  <span (click)="handleBreadcrumbPartClick(part, i)" class="breadcrumb-link">{{ part }}</span>
+                  <span *ngIf="!last" class="separator"> > </span>
+                </ng-container>
+              </ng-container>
             </div>
           </div>
         </li>

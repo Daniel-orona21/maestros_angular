@@ -88,13 +88,18 @@ export class InicioComponent {
     }
   }
 
-  handleBreadcrumbClick() {
-    if (this.breadcrumb?.startsWith('Control escolar >')) {
-      if (this.controlEscolarComponent) {
-        this.controlEscolarComponent.obtenerGrupos();
+  handleBreadcrumbPartClick(part: string, index: number) {
+    if (this.breadcrumb?.startsWith('Control escolar')) {
+      if (part === 'Control escolar') {
+        if (this.controlEscolarComponent) {
+          this.controlEscolarComponent.obtenerGrupos();
+        }
       }
-    } else {
-      this.resetDashboard();
+    } else if (this.breadcrumb?.startsWith('Mi perfil')) {
+      if (part === 'Mi perfil') {
+        this.resetDashboard();
+      }
+      // Si es otra parte (Experiencias, Educación, etc.), no hacemos nada
     }
   }
 
