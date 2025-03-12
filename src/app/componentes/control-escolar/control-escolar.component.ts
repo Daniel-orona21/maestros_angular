@@ -11,8 +11,6 @@ interface Alumno {
   id: number;
   nombre: string;
   apellido: string;
-  asistencia?: string;
-  checkboxAsistencia?: boolean;
   seleccionado?: boolean;
 }
 
@@ -27,8 +25,6 @@ export class ControlEscolarComponent implements OnInit {
   grupos: any[] = [];
   alumnos: any[] = [];
   grupoSeleccionado: any = null;
-  asistenciaTomada: boolean = false;
-  fechaHoy: string = '';
   modoEliminacion: boolean = false;
   modoEdicion: boolean = false;
   alumnoEditando: any = null;
@@ -52,7 +48,6 @@ export class ControlEscolarComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarGrupos();
-    this.fechaHoy = this.obtenerFechaActual();
   }
 
   cargarGrupos(): void {
@@ -63,7 +58,6 @@ export class ControlEscolarComponent implements OnInit {
         this.grupos = data;
         this.alumnos = [];
         this.grupoSeleccionado = null;
-        this.asistenciaTomada = false;
         if (!this.grupoSeleccionado) {
           this.actualizarBreadcrumb.emit('Control escolar');
         }
@@ -232,7 +226,6 @@ export class ControlEscolarComponent implements OnInit {
 
   seleccionarGrupo(grupo: any): void {
     this.grupoSeleccionado = grupo;
-    this.asistenciaTomada = false;
     
     const breadcrumbTexto = `${grupo.grado}° ${grupo.grupo}`;
     this.actualizarBreadcrumb.emit(breadcrumbTexto);
@@ -241,8 +234,7 @@ export class ControlEscolarComponent implements OnInit {
       next: (data) => {
         this.alumnos = data.map(alumno => ({
           ...alumno,
-          asistencia: undefined,
-          checkboxAsistencia: false
+          seleccionado: false
         }));
         this.alumnosFiltrados = [...this.alumnos];
       },
@@ -263,30 +255,6 @@ export class ControlEscolarComponent implements OnInit {
       alumno.nombre.toLowerCase().includes(filtro) ||
       alumno.apellido.toLowerCase().includes(filtro)
     );
-  }
-
-  registrarAsistencia(alumno: any, asistencia: boolean): void {
-    alumno.asistencia = asistencia ? '/' : '.';
-
-    this.alumnos.sort((a, b) => (a.asistencia === undefined ? -1 : 1));
-    this.alumnosFiltrados = [...this.alumnos];
-
-    if (this.alumnos.every(a => a.asistencia !== undefined)) {
-      this.asistenciaTomada = false;
-    }
-  }
-
-  activarAsistencia(): void {
-    this.asistenciaTomada = true;
-    this.alumnos.forEach(alumno => {
-      alumno.asistencia = undefined;
-      alumno.checkboxAsistencia = false;
-    });
-  }
-  
-  obtenerFechaActual(): string {
-    const hoy = new Date();
-    return `${hoy.getDate()}/${hoy.getMonth() + 1}/${hoy.getFullYear()}`;
   }
 
   eliminarAlumnosSeleccionados(): void {
@@ -374,8 +342,7 @@ export class ControlEscolarComponent implements OnInit {
         next: (nuevoAlumno: Alumno) => {
           this.alumnos.push({
             ...nuevoAlumno,
-            asistencia: undefined,
-            checkboxAsistencia: false
+            seleccionado: false
           });
           this.alumnosFiltrados = [...this.alumnos];
           
@@ -409,13 +376,11 @@ export class ControlEscolarComponent implements OnInit {
   
     doc.text(`Lista de Alumnos - ${this.grupoSeleccionado?.grado}° ${this.grupoSeleccionado?.grupo}`, 10, 10);
   
-    const columnas = ['Nombre', 'Apellido', this.fechaHoy, 'Asistencia'];
+    const columnas = ['Nombre', 'Apellido'];
   
     const filas = this.alumnos.map(alumno => [
       alumno.nombre,
-      alumno.apellido,
-      alumno.asistencia !== undefined ? alumno.asistencia : '',
-      (alumno.asistencia && alumno.asistencia !== '.') ? 'Presente' : 'Ausente' 
+      alumno.apellido
     ]);
   
     autoTable(doc, {

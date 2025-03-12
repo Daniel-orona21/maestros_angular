@@ -35,6 +35,15 @@
     font-size: 32px;
 }
 
+.titulo {
+    display: flex;
+    gap: 5px;
+}
+
+.grupoT {
+ text-transform: uppercase;
+}
+
 .titulo-con-regreso {
     display: flex;
     align-items: center;
@@ -273,7 +282,6 @@
     margin-bottom: 20px;
 }
 
-.btn-asistencia,
 .btn-descargar {
     display: flex;
     align-items: center;
@@ -284,21 +292,13 @@
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 14px;
-}
-
-.btn-asistencia {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.btn-descargar {
     background-color: #f0f2f5;
     color: #1a3d5c;
 }
 
-.btn-asistencia:hover,
 .btn-descargar:hover {
     transform: translateY(-2px);
+    background-color: #e8eef5;
 }
 
 .tabla-container {
@@ -333,30 +333,6 @@
 
 .fila-gris {
     background-color: #f8f9fa;
-}
-
-.botones-asistencia {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-asistencia-si,
-.btn-asistencia-no {
-    padding: 4px 8px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-asistencia-si {
-    background-color: #4CAF50;
-    color: white;
-}
-
-.btn-asistencia-no {
-    background-color: #dc3545;
-    color: white;
 }
 
 /* Modal */

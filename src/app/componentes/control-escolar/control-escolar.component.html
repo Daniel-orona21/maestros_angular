@@ -3,7 +3,10 @@
     <div class="encabezado">
       <div class="titulo-con-regreso" *ngIf="grupoSeleccionado">
         <span (click)="cargarGrupos()" class="material-symbols-outlined btn-regresar">arrow_back</span>
-        <h1>Alumnos de {{ grupoSeleccionado.grado }}° {{ grupoSeleccionado.grupo }}</h1>
+        <div class="titulo">
+          <h1>Alumnos de {{ grupoSeleccionado.grado }}°</h1>
+          <h1 class="grupoT">{{ grupoSeleccionado.grupo }}</h1>
+        </div>
       </div>
       <h1 *ngIf="!grupoSeleccionado">Mis grupos</h1>
 
@@ -31,6 +34,10 @@
           <span class="material-symbols-outlined">add</span>
           {{ grupoSeleccionado ? 'Agregar Alumno' : 'Agregar Grupo' }}
         </button>
+        <!-- <button class="btn-agregar" (click)="descargarPDF()">
+          <span class="material-symbols-outlined">download</span>
+          Descargar reporte
+        </button> -->
       </div>
     </div>
 
@@ -82,25 +89,13 @@
 
     <!-- Contenido de alumnos -->
     <div class="alumnos" *ngIf="grupoSeleccionado && !cargando && !error">
-      <div class="acciones-tabla">
-        <button class="btn-asistencia" (click)="activarAsistencia()">
-          <span class="material-symbols-outlined">fact_check</span>
-          Tomar asistencia
-        </button>
-        <button class="btn-descargar" (click)="descargarPDF()">
-          <span class="material-symbols-outlined">download</span>
-          Descargar reporte
-        </button>
-      </div>
-
       <div *ngIf="alumnos.length > 0; else noAlumnos" class="tabla-container">
         <table class="tabla-alumnos">
           <thead>
             <tr>
               <th>Nombre</th>
               <th>Apellido</th>
-              <th>{{ fechaHoy }}</th>
-              <th>Asistencia</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -109,15 +104,10 @@
                 (click)="abrirModalEdicion(alumno)">
               <td>{{ alumno.nombre }}</td>
               <td>{{ alumno.apellido }}</td>
-              <td>{{ alumno.asistencia !== undefined ? alumno.asistencia : '' }}</td>
               <td>
                 <ng-container *ngIf="modoEliminacion">
                   <input type="checkbox" [(ngModel)]="alumno.seleccionado" />
                 </ng-container>
-                <div class="botones-asistencia" *ngIf="!modoEliminacion && asistenciaTomada && alumno.asistencia === undefined">
-                  <button class="btn-asistencia-si" (click)="registrarAsistencia(alumno, true)">✔</button>
-                  <button class="btn-asistencia-no" (click)="registrarAsistencia(alumno, false)">✖</button>
-                </div>
               </td>
             </tr>
           </tbody>
