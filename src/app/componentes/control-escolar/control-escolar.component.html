@@ -22,11 +22,11 @@
           <span class="material-symbols-outlined">search</span>
         </div>
 
-        <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+        <button *ngIf="alumnos.length > 0" class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
           <span class="material-symbols-outlined">edit</span>
           Editar
         </button>
-        <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+        <button *ngIf="alumnos.length > 0" class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
           <span class="material-symbols-outlined">delete</span>
           Eliminar
         </button>
@@ -89,6 +89,13 @@
 
     <!-- Contenido de alumnos -->
     <div class="alumnos" *ngIf="grupoSeleccionado && !cargando && !error">
+      <div class="acciones-tabla" *ngIf="modoEliminacion">
+        <button class="btn-confirmar-eliminar" (click)="eliminarAlumnosSeleccionados()">
+          <span class="material-symbols-outlined">delete_forever</span>
+          Confirmar Eliminación
+        </button>
+      </div>
+
       <div *ngIf="alumnos.length > 0; else noAlumnos" class="tabla-container">
         <table class="tabla-alumnos">
           <thead>
@@ -101,7 +108,8 @@
           <tbody>
             <tr *ngFor="let alumno of alumnosFiltrados; let i = index" 
                 [class.fila-gris]="i % 2 === 0"
-                (click)="abrirModalEdicion(alumno)">
+                [class.modo-edicion]="modoEdicion"
+                (click)="modoEdicion && abrirModalEdicion(alumno)">
               <td>{{ alumno.nombre }}</td>
               <td>{{ alumno.apellido }}</td>
               <td>

@@ -301,6 +301,29 @@
     background-color: #e8eef5;
 }
 
+.btn-confirmar-eliminar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-confirmar-eliminar:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+}
+
+.btn-confirmar-eliminar:active {
+    transform: scale(0.98);
+}
+
 .tabla-container {
     width: 100%;
     overflow-x: auto;
@@ -333,6 +356,42 @@
 
 .fila-gris {
     background-color: #f8f9fa;
+}
+
+.tabla-alumnos tr.modo-edicion {
+    cursor: pointer;
+}
+
+.tabla-alumnos tr.modo-edicion:hover {
+    background-color: #1a3d5c61 !important;
+}
+
+.alumno-contenido {
+    position: relative;
+}
+
+.tabla-alumnos .card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.296);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 4px;
+}
+
+.tabla-alumnos tr.modo-edicion:hover .card-overlay {
+    opacity: 1;
+}
+
+.tabla-alumnos .card-overlay span {
+    font-size: 24px;
+    color: white;
 }
 
 /* Modal */
@@ -575,5 +634,18 @@
 
     .datosGrupo strong {
         color: #e0e0e0;
+    }
+
+    .btn-confirmar-eliminar {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-confirmar-eliminar:hover {
+        background-color: #c82333;
+    }
+
+    .tabla-alumnos tr.modo-edicion:hover {
+        background-color: #1562a461 !important;
     }
 }

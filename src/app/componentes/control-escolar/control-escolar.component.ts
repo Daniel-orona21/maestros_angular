@@ -279,10 +279,11 @@ export class ControlEscolarComponent implements OnInit {
   }
 
   abrirModalEdicion(alumno: any): void {
-    if (!this.modoEdicion) return; 
+    if (!this.modoEdicion) return;
     this.alumnoEditando = { ...alumno };
     this.nuevoNombre = alumno.nombre;
     this.nuevoApellido = alumno.apellido;
+    this.mostrarModal = true;
   }
 
   guardarEdicion(): void {
