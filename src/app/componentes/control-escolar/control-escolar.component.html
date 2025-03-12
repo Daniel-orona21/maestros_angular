@@ -1,41 +1,65 @@
 <div class="cuerpo">
   <div class="carta">
-    <h1 *ngIf="!grupoSeleccionado">Mis grupos</h1>
-   <div class="botones" *ngIf="grupoSeleccionado">
-  <span (click)="obtenerGrupos()" class="material-symbols-outlined">arrow_back</span>
-  <h1>Alumnos de {{ grupoSeleccionado.grado }}° {{ grupoSeleccionado.grupo }}</h1>
+    <div class="encabezado">
+      <div class="titulo-con-regreso" *ngIf="grupoSeleccionado">
+        <span (click)="cargarGrupos()" class="material-symbols-outlined btn-regresar">arrow_back</span>
+        <h1>Alumnos de {{ grupoSeleccionado.grado }}° {{ grupoSeleccionado.grupo }}</h1>
+      </div>
+      <h1 *ngIf="!grupoSeleccionado">Mis grupos</h1>
 
-  <div class="contenedorBuscar">
-    <input 
-    type="text" 
-    placeholder="Buscar alumno..."
-    class="buscador"
-    [(ngModel)]="filtroAlumno"
-    (input)="filtrarAlumnos()"
-  />
-   <span class="material-symbols-outlined" >close</span>
-  </div>
+      <div class="acciones">
+        <div class="contenedor-buscar" *ngIf="grupoSeleccionado">
+          <input 
+            type="text" 
+            placeholder="Buscar alumno..."
+            class="buscador"
+            [(ngModel)]="filtroAlumno"
+            (input)="filtrarAlumnos()"
+          />
+          <span class="material-symbols-outlined">search</span>
+        </div>
 
-  <div class="edicion">
-    <span matTooltip="Eliminar seleccionados" class="material-symbols-outlined confirm" *ngIf="modoEliminacion" (click)="eliminarAlumnosSeleccionados()">check</span>
-    
-    <span 
-  [matTooltip]="modoEliminacion ? 'Cancelar eliminar' : 'Eliminar alumnos'" 
-  class="material-symbols-outlined delete" 
-  [ngClass]="{'deleteA': modoEliminacion}" 
-  (click)="activarModoEliminacion()">
-  delete
-</span>
-  
-    <span matTooltip="Editar" class="material-symbols-outlined edit" [ngClass]="{'activo': modoEdicion}" (click)="activarModoEdicion()">edit</span>
-  </div>
-</div>
-    <div class="grupos" *ngIf="!grupoSeleccionado">
-      <div *ngIf="grupos.length > 0; else noGrupos">
-        <div *ngFor="let grupo of grupos" class="grupo" (click)="seleccionarGrupo(grupo)">
+        <button class="btn-modo" [class.activo]="modoEdicion" (click)="toggleModoEdicion()">
+          <span class="material-symbols-outlined">edit</span>
+          Editar
+        </button>
+        <button class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
+          <span class="material-symbols-outlined">delete</span>
+          Eliminar
+        </button>
+        <button class="btn-agregar" (click)="abrirModal()">
+          <span class="material-symbols-outlined">add</span>
+          {{ grupoSeleccionado ? 'Agregar Alumno' : 'Agregar Grupo' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Estados de carga y error -->
+    <div class="estado-carga" *ngIf="cargando">
+      <span class="material-symbols-outlined girando">progress_activity</span>
+      <p>Cargando {{ grupoSeleccionado ? 'alumnos' : 'grupos' }}...</p>
+    </div>
+
+    <div class="mensaje-error" *ngIf="error">
+      <span class="material-symbols-outlined">error</span>
+      <p>{{ error }}</p>
+    </div>
+
+    <!-- Contenido de grupos -->
+    <div class="grupos" *ngIf="!grupoSeleccionado && !cargando && !error">
+      <ng-container *ngIf="grupos.length > 0; else noGrupos">
+        <div *ngFor="let grupo of grupos" 
+             class="grupo" 
+             (click)="handleCardClick(grupo)"
+             [class.modo-edicion]="modoEdicion"
+             [class.modo-eliminacion]="modoEliminacion">
+          <div class="card-overlay" *ngIf="modoEdicion || modoEliminacion">
+            <span class="material-symbols-outlined" *ngIf="modoEdicion">edit</span>
+            <span class="material-symbols-outlined" *ngIf="modoEliminacion">delete</span>
+          </div>
           <div class="infoGrupo">
             <div class="grupoFoto" 
-                 [ngClass]="{'grupo-a': grupo.carrera === 'Tecnologías de la Información', 'grupo-b': grupo.carrera === 'Diseño Digital'}">
+                 [ngClass]="{'grupo-b': grupo.modalidad === 'BIS', 'grupo-a': grupo.modalidad === 'Clásica'}">
               <h2>{{ grupo.grado }}° {{ grupo.grupo }}</h2>
             </div>
             <div class="datosGrupo">
@@ -43,72 +67,133 @@
               <p><strong>Modalidad:</strong> {{ grupo.modalidad }}</p>
             </div>
           </div>
-          <span class="material-symbols-outlined">edit</span>
         </div>
-      </div>
+      </ng-container>
     </div>
 
-    <div class="alumnos" *ngIf="grupoSeleccionado">
-      <div *ngIf="alumnos.length > 0; else noAlumnos">
+    <!-- Template para cuando no hay grupos -->
+    <ng-template #noGrupos>
+      <div class="sin-grupos">
+        <span class="material-symbols-outlined">groups</span>
+        <p>No tienes grupos asignados</p>
+        <p class="subtexto">Haz clic en "Agregar Grupo" para comenzar</p>
+      </div>
+    </ng-template>
+
+    <!-- Contenido de alumnos -->
+    <div class="alumnos" *ngIf="grupoSeleccionado && !cargando && !error">
+      <div class="acciones-tabla">
+        <button class="btn-asistencia" (click)="activarAsistencia()">
+          <span class="material-symbols-outlined">fact_check</span>
+          Tomar asistencia
+        </button>
+        <button class="btn-descargar" (click)="descargarPDF()">
+          <span class="material-symbols-outlined">download</span>
+          Descargar reporte
+        </button>
+      </div>
+
+      <div *ngIf="alumnos.length > 0; else noAlumnos" class="tabla-container">
         <table class="tabla-alumnos">
           <thead>
-           <span matTooltip="Descargar reporte" class="material-symbols-outlined" (click)="descargarPDF()">download</span>
-     <tr>
-       <th>Nombre</th>
-       <th>Apellido</th>
-       <th>Grado</th>
-       <th>{{ fechaHoy }}</th>
-       <th>
-         Asistencia
-         <button class="botonAsistencia" (click)="activarAsistencia()">Tomar asistencia</button>
-       </th>
-     </tr>
-   </thead>
-   <tbody>
-    <tr *ngFor="let alumno of alumnosFiltrados; let i = index" [class.fila-gris]="i % 2 === 0"
-        (click)="abrirModalEdicion(alumno)">
-      <td>{{ alumno.nombre }}</td>
-      <td>{{ alumno.apellido }}</td>
-      <td>{{ alumno.grado }}</td>
-      <td>{{ alumno.asistencia !== undefined ? alumno.asistencia : '' }}</td>
-      <td>
-        <ng-container *ngIf="modoEliminacion">
-          <input type="checkbox" [(ngModel)]="alumno.seleccionado" />
-        </ng-container>
-        <div class="botoneraAsis" *ngIf="!modoEliminacion && i === 0 && asistenciaTomada && alumno.asistencia === undefined">
-          <button class="botonAsis si" (click)="registrarAsistencia(alumno, true)">✔</button>
-          <button class="botonAsis no" (click)="registrarAsistencia(alumno, false)">✖</button>
-        </div>
-      </td>
-    </tr>
-  </tbody>
- </table>
+            <tr>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>{{ fechaHoy }}</th>
+              <th>Asistencia</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let alumno of alumnosFiltrados; let i = index" 
+                [class.fila-gris]="i % 2 === 0"
+                (click)="abrirModalEdicion(alumno)">
+              <td>{{ alumno.nombre }}</td>
+              <td>{{ alumno.apellido }}</td>
+              <td>{{ alumno.asistencia !== undefined ? alumno.asistencia : '' }}</td>
+              <td>
+                <ng-container *ngIf="modoEliminacion">
+                  <input type="checkbox" [(ngModel)]="alumno.seleccionado" />
+                </ng-container>
+                <div class="botones-asistencia" *ngIf="!modoEliminacion && asistenciaTomada && alumno.asistencia === undefined">
+                  <button class="btn-asistencia-si" (click)="registrarAsistencia(alumno, true)">✔</button>
+                  <button class="btn-asistencia-no" (click)="registrarAsistencia(alumno, false)">✖</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
+      <ng-template #noAlumnos>
+        <div class="sin-alumnos">
+          <span class="material-symbols-outlined">person_off</span>
+          <p>No hay alumnos en este grupo</p>
+          <p class="subtexto">Haz clic en "Agregar Alumno" para comenzar</p>
+        </div>
+      </ng-template>
     </div>
-
-    <ng-template #noGrupos>
-      <p class="mensajeNoGrupos">No hay grupos disponibles.</p>
-    </ng-template>
-
-    <ng-template #noAlumnos>
-      <p class="mensajeNoGrupos">No hay alumnos en este grupo.</p>
-    </ng-template>
   </div>
 
-  <div class="modal" *ngIf="alumnoEditando">
-    <div class="modal-content">
-      <h2>Editar Alumno</h2>
-      <div class="modal-body">
-        <label for="nombre">Nombre:</label>
-        <input id="nombre" type="text" [(ngModel)]="nuevoNombre" />
-  
-        <label for="apellido">Apellido:</label>
-        <input id="apellido" type="text" [(ngModel)]="nuevoApellido" />
-      </div>
+  <!-- Modales -->
+  <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>{{ grupoEditando.id ? 'Editar' : 'Agregar' }} {{ grupoSeleccionado ? 'Alumno' : 'Grupo' }}</h2>
       
+      <!-- Contenido del modal para grupos -->
+      <div class="modal-body" *ngIf="!grupoSeleccionado">
+        <div class="form-group">
+          <label for="grado">Grado</label>
+          <input type="number" id="grado" [(ngModel)]="grupoEditando.grado" 
+                 placeholder="Ej: 1" min="1" max="6"
+                 (keyup.enter)="guardarGrupo()">
+        </div>
+
+        <div class="form-group">
+          <label for="grupo">Grupo</label>
+          <input type="text" id="grupo" [(ngModel)]="grupoEditando.grupo" 
+                 placeholder="Ej: A"
+                 (keyup.enter)="guardarGrupo()">
+        </div>
+
+        <div class="form-group">
+          <label for="carrera">Carrera</label>
+          <input type="text" id="carrera" [(ngModel)]="grupoEditando.carrera" 
+                 placeholder="Ej: Ingeniería"
+                 (keyup.enter)="guardarGrupo()">
+        </div>
+
+        <div class="form-group">
+          <label for="modalidad">Modalidad</label>
+          <select id="modalidad" [(ngModel)]="grupoEditando.modalidad"
+                  (keyup.enter)="guardarGrupo()">
+            <option value="Clásica">Clásica</option>
+            <option value="BIS">BIS</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Contenido del modal para alumnos -->
+      <div class="modal-body" *ngIf="grupoSeleccionado">
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" [(ngModel)]="nuevoNombre" 
+                 placeholder="Nombre del alumno"
+                 (keyup.enter)="guardarEdicion()">
+        </div>
+
+        <div class="form-group">
+          <label for="apellido">Apellido</label>
+          <input type="text" id="apellido" [(ngModel)]="nuevoApellido" 
+                 placeholder="Apellido del alumno"
+                 (keyup.enter)="guardarEdicion()">
+        </div>
+      </div>
+
       <div class="modal-footer">
-        <button class="guardar" (click)="guardarEdicion()">Guardar</button>
-        <button class="cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-guardar" (click)="grupoSeleccionado ? guardarEdicion() : guardarGrupo()" [disabled]="cargando">
+          {{ cargando ? 'Guardando...' : 'Guardar' }}
+        </button>
       </div>
     </div>
   </div>

@@ -106,7 +106,7 @@ export class InicioComponent implements OnInit {
     if (this.breadcrumb?.startsWith('Control escolar')) {
       if (part === 'Control escolar') {
         if (this.controlEscolarComponent) {
-          this.controlEscolarComponent.obtenerGrupos();
+          this.controlEscolarComponent.cargarGrupos();
         }
       }
     } else if (this.breadcrumb?.startsWith('Mi perfil')) {

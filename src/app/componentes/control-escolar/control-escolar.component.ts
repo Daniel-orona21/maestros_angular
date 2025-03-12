@@ -5,6 +5,16 @@ import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import Swal from 'sweetalert2';
+
+interface Alumno {
+  id: number;
+  nombre: string;
+  apellido: string;
+  asistencia?: string;
+  checkboxAsistencia?: boolean;
+  seleccionado?: boolean;
+}
 
 @Component({
   selector: 'app-control-escolar',
@@ -19,24 +29,35 @@ export class ControlEscolarComponent implements OnInit {
   grupoSeleccionado: any = null;
   asistenciaTomada: boolean = false;
   fechaHoy: string = '';
-  modoEliminacion: boolean = false; 
-  modoEdicion: boolean = false; 
-  alumnoEditando: any = null; 
+  modoEliminacion: boolean = false;
+  modoEdicion: boolean = false;
+  alumnoEditando: any = null;
   nuevoNombre: string = '';
   nuevoApellido: string = '';
   filtroAlumno: string = '';
   alumnosFiltrados: any[] = [];
+  cargando = true;
+  error: string | null = null;
+  mostrarModal = false;
+  grupoEditando: any = {
+    grado: '',
+    grupo: '',
+    carrera: '',
+    modalidad: 'Clásica'
+  };
 
   @Output() actualizarBreadcrumb = new EventEmitter<string | null>();
 
   constructor(private gruposService: GruposService) {}
 
   ngOnInit(): void {
-    this.obtenerGrupos();
+    this.cargarGrupos();
     this.fechaHoy = this.obtenerFechaActual();
   }
-  
-  obtenerGrupos(): void {
+
+  cargarGrupos(): void {
+    this.cargando = true;
+    this.error = null;
     this.gruposService.obtenerGrupos().subscribe({
       next: (data) => {
         this.grupos = data;
@@ -46,13 +67,169 @@ export class ControlEscolarComponent implements OnInit {
         if (!this.grupoSeleccionado) {
           this.actualizarBreadcrumb.emit('Control escolar');
         }
+        this.cargando = false;
       },
       error: (err) => {
-        console.error('Error obteniendo grupos:', err);
+        console.error('Error al cargar grupos:', err);
+        this.error = 'Error al cargar los grupos';
+        this.cargando = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los grupos'
+        });
       }
     });
   }
-  
+
+  toggleModoEdicion() {
+    this.modoEdicion = !this.modoEdicion;
+    if (this.modoEdicion) {
+      this.modoEliminacion = false;
+    }
+  }
+
+  toggleModoEliminacion() {
+    this.modoEliminacion = !this.modoEliminacion;
+    if (this.modoEliminacion) {
+      this.modoEdicion = false;
+    }
+  }
+
+  handleCardClick(grupo: any) {
+    if (this.modoEdicion) {
+      this.abrirModal(grupo);
+      this.modoEdicion = false;
+    } else if (this.modoEliminacion) {
+      this.eliminarGrupo(grupo.id);
+      this.modoEliminacion = false;
+    } else {
+      this.seleccionarGrupo(grupo);
+    }
+  }
+
+  abrirModal(grupo?: any) {
+    this.mostrarModal = true;
+    if (grupo) {
+      this.grupoEditando = { ...grupo };
+    } else {
+      this.grupoEditando = {
+        grado: '',
+        grupo: '',
+        carrera: '',
+        modalidad: 'Clásica'
+      };
+    }
+  }
+
+  cerrarModal() {
+    this.mostrarModal = false;
+    this.resetModal();
+  }
+
+  resetModal() {
+    this.grupoEditando = {
+      grado: '',
+      grupo: '',
+      carrera: '',
+      modalidad: 'Clásica'
+    };
+    this.alumnoEditando = null;
+    this.nuevoNombre = '';
+    this.nuevoApellido = '';
+  }
+
+  async guardarGrupo(): Promise<void> {
+    if (!this.grupoEditando) return;
+
+    // Validación básica
+    if (!this.grupoEditando.grado || 
+        !this.grupoEditando.grupo || 
+        !this.grupoEditando.carrera || 
+        !this.grupoEditando.modalidad) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Por favor, completa todos los campos requeridos'
+      });
+      return;
+    }
+
+    this.cargando = true;
+    this.error = null;
+
+    try {
+      if (this.grupoEditando.id) {
+        await this.gruposService.actualizarGrupo(
+          this.grupoEditando.id,
+          this.grupoEditando
+        ).toPromise();
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Actualizado!',
+          text: 'El grupo se actualizó correctamente'
+        });
+      } else {
+        await this.gruposService.agregarGrupo(
+          this.grupoEditando
+        ).toPromise();
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Agregado!',
+          text: 'El grupo se agregó correctamente'
+        });
+      }
+
+      this.cerrarModal();
+      this.cargarGrupos();
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un problema al guardar el grupo'
+      });
+    } finally {
+      this.cargando = false;
+    }
+  }
+
+  async eliminarGrupo(id: number): Promise<void> {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "No podrás revertir esto",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1a3d5c',
+      cancelButtonColor: '#b0b0b0',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await this.gruposService.eliminarGrupo(id).toPromise();
+        
+        Swal.fire({
+          icon: 'success',
+          title: '¡Eliminado!',
+          text: 'El grupo ha sido eliminado',
+          confirmButtonColor: '#1a3d5c'
+        });
+        
+        this.cargarGrupos();
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo eliminar el grupo',
+          confirmButtonColor: '#1a3d5c'
+        });
+      }
+    }
+  }
+
   seleccionarGrupo(grupo: any): void {
     this.grupoSeleccionado = grupo;
     this.asistenciaTomada = false;
@@ -71,28 +248,33 @@ export class ControlEscolarComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error obteniendo alumnos:', err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los alumnos del grupo'
+        });
       }
     });
   }
 
-filtrarAlumnos(): void {
-  const filtro = this.filtroAlumno.toLowerCase().trim();
-  this.alumnosFiltrados = this.alumnos.filter(alumno =>
-    alumno.nombre.toLowerCase().includes(filtro) ||
-    alumno.apellido.toLowerCase().includes(filtro)
-  );
-}
-
-registrarAsistencia(alumno: any, asistencia: boolean): void {
-  alumno.asistencia = asistencia ? '/' : '.';
-
-  this.alumnos.sort((a, b) => (a.asistencia === undefined ? -1 : 1));
-  this.alumnosFiltrados = [...this.alumnos];
-
-  if (this.alumnos.every(a => a.asistencia !== undefined)) {
-    this.asistenciaTomada = false;
+  filtrarAlumnos(): void {
+    const filtro = this.filtroAlumno.toLowerCase().trim();
+    this.alumnosFiltrados = this.alumnos.filter(alumno =>
+      alumno.nombre.toLowerCase().includes(filtro) ||
+      alumno.apellido.toLowerCase().includes(filtro)
+    );
   }
-}
+
+  registrarAsistencia(alumno: any, asistencia: boolean): void {
+    alumno.asistencia = asistencia ? '/' : '.';
+
+    this.alumnos.sort((a, b) => (a.asistencia === undefined ? -1 : 1));
+    this.alumnosFiltrados = [...this.alumnos];
+
+    if (this.alumnos.every(a => a.asistencia !== undefined)) {
+      this.asistenciaTomada = false;
+    }
+  }
 
   activarAsistencia(): void {
     this.asistenciaTomada = true;
@@ -105,11 +287,6 @@ registrarAsistencia(alumno: any, asistencia: boolean): void {
   obtenerFechaActual(): string {
     const hoy = new Date();
     return `${hoy.getDate()}/${hoy.getMonth() + 1}/${hoy.getFullYear()}`;
-  }
-
-  activarModoEliminacion(): void {
-    this.modoEliminacion = !this.modoEliminacion;
-    this.alumnos.forEach(alumno => (alumno.seleccionado = false)); 
   }
 
   eliminarAlumnosSeleccionados(): void {
@@ -133,10 +310,6 @@ registrarAsistencia(alumno: any, asistencia: boolean): void {
     });
   }
 
-  activarModoEdicion(): void {
-    this.modoEdicion = !this.modoEdicion;
-  }
-  
   abrirModalEdicion(alumno: any): void {
     if (!this.modoEdicion) return; 
     this.alumnoEditando = { ...alumno };
@@ -144,33 +317,91 @@ registrarAsistencia(alumno: any, asistencia: boolean): void {
     this.nuevoApellido = alumno.apellido;
   }
 
-  cerrarModal(): void {
-    this.alumnoEditando = null;
-  }
-
   guardarEdicion(): void {
-    if (!this.alumnoEditando) return;
+    if (!this.nuevoNombre || !this.nuevoApellido) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campos incompletos',
+        text: 'Por favor, completa todos los campos requeridos'
+      });
+      return;
+    }
+
+    this.cargando = true;
+
+    if (this.alumnoEditando) {
+      // Editar alumno existente
+      this.gruposService.editarAlumno(this.alumnoEditando.id, this.nuevoNombre, this.nuevoApellido).subscribe({
+        next: () => {
+          const index = this.alumnos.findIndex(a => a.id === this.alumnoEditando.id);
+          if (index !== -1) {
+            this.alumnos[index] = {
+              ...this.alumnoEditando,
+              nombre: this.nuevoNombre,
+              apellido: this.nuevoApellido
+            };
+            this.alumnosFiltrados = [...this.alumnos];
+          }
+          
+          Swal.fire({
+            icon: 'success',
+            title: '¡Actualizado!',
+            text: 'El alumno se actualizó correctamente'
+          });
   
-    const alumnoActualizado = {
-      ...this.alumnoEditando,
-      nombre: this.nuevoNombre,
-      apellido: this.nuevoApellido
-    };
-  
-    this.gruposService.editarAlumno(alumnoActualizado.id, this.nuevoNombre, this.nuevoApellido).subscribe({
-      next: () => {
-        const index = this.alumnos.findIndex(a => a.id === alumnoActualizado.id);
-        if (index !== -1) {
-          this.alumnos[index] = alumnoActualizado;
-          this.alumnosFiltrados = [...this.alumnos];
+          this.mostrarModal = false;
+          this.resetModal();
+          this.modoEdicion = false;
+        },
+        error: (error: Error) => {
+          console.error('Error actualizando alumno:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo actualizar el alumno'
+          });
+        },
+        complete: () => {
+          this.cargando = false;
         }
-        
-        alert('Alumno actualizado con éxito.'); 
+      });
+    } else {
+      // Agregar nuevo alumno
+      this.gruposService.agregarAlumno(this.grupoSeleccionado.id, {
+        nombre: this.nuevoNombre,
+        apellido: this.nuevoApellido
+      }).subscribe({
+        next: (nuevoAlumno: Alumno) => {
+          this.alumnos.push({
+            ...nuevoAlumno,
+            asistencia: undefined,
+            checkboxAsistencia: false
+          });
+          this.alumnosFiltrados = [...this.alumnos];
+          
+          Swal.fire({
+            icon: 'success',
+            title: '¡Agregado!',
+            text: 'El alumno se agregó correctamente'
+          });
   
-        this.cerrarModal(); 
-      },
-      error: err => console.error('Error actualizando alumno:', err)
-    });
+          this.mostrarModal = false;
+          this.resetModal();
+          this.modoEdicion = false;
+        },
+        error: (error: Error) => {
+          console.error('Error agregando alumno:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo agregar el alumno'
+          });
+        },
+        complete: () => {
+          this.cargando = false;
+        }
+      });
+    }
   }
 
   descargarPDF() {
@@ -178,12 +409,11 @@ registrarAsistencia(alumno: any, asistencia: boolean): void {
   
     doc.text(`Lista de Alumnos - ${this.grupoSeleccionado?.grado}° ${this.grupoSeleccionado?.grupo}`, 10, 10);
   
-    const columnas = ['Nombre', 'Apellido', 'Grado', this.fechaHoy, 'Asistencia'];
+    const columnas = ['Nombre', 'Apellido', this.fechaHoy, 'Asistencia'];
   
     const filas = this.alumnos.map(alumno => [
       alumno.nombre,
       alumno.apellido,
-      alumno.grado,
       alumno.asistencia !== undefined ? alumno.asistencia : '',
       (alumno.asistencia && alumno.asistencia !== '.') ? 'Presente' : 'Ausente' 
     ]);
@@ -196,5 +426,4 @@ registrarAsistencia(alumno: any, asistencia: boolean): void {
   
     doc.save(`Lista_Alumnos_${this.grupoSeleccionado?.grado}_${this.grupoSeleccionado?.grupo}.pdf`);
   }
-
 }

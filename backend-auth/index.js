@@ -402,11 +402,137 @@ app.get('/grupos', (req, res) => {
   });
 });
 
+// 🟢 Crear un nuevo grupo (POST)
+app.post('/grupos', verificarToken, (req, res) => {
+  const { grado, grupo, carrera, modalidad } = req.body;
+
+  // Validar campos requeridos
+  if (!grado || !grupo || !carrera || !modalidad) {
+    return handleError(res, 400, 'Todos los campos son requeridos', 'ERROR_VALIDATION');
+  }
+
+  const sql = 'INSERT INTO grupos (grado, grupo, carrera, modalidad, user_id) VALUES (?, ?, ?, ?, ?)';
+  
+  db.query(sql, [grado, grupo, carrera, modalidad, req.usuario.id], (err, result) => {
+    if (err) {
+      console.error('Error al crear grupo:', err);
+      return handleError(res, 500, 'Error al crear el grupo', 'ERROR_DB');
+    }
+
+    // Obtener el grupo recién creado
+    db.query('SELECT * FROM grupos WHERE id = ?', [result.insertId], (err, results) => {
+      if (err) {
+        console.error('Error al obtener el grupo creado:', err);
+        return handleError(res, 500, 'Error al obtener el grupo creado', 'ERROR_DB');
+      }
+      res.status(201).json(results[0]);
+    });
+  });
+});
+
+// 🔄 Actualizar un grupo (PUT)
+app.put('/grupos/:id', verificarToken, (req, res) => {
+  const { id } = req.params;
+  const { grado, grupo, carrera, modalidad } = req.body;
+
+  // Validar campos requeridos
+  if (!grado || !grupo || !carrera || !modalidad) {
+    return handleError(res, 400, 'Todos los campos son requeridos', 'ERROR_VALIDATION');
+  }
+
+  // Verificar que el grupo pertenece al usuario
+  db.query(
+    'SELECT * FROM grupos WHERE id = ? AND user_id = ?',
+    [id, req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al verificar grupo:', err);
+        return handleError(res, 500, 'Error al verificar el grupo', 'ERROR_DB');
+      }
+
+      if (results.length === 0) {
+        return handleError(res, 404, 'Grupo no encontrado o no autorizado', 'ERROR_NOT_FOUND');
+      }
+
+      // Actualizar el grupo
+      const updateSql = 'UPDATE grupos SET grado = ?, grupo = ?, carrera = ?, modalidad = ? WHERE id = ? AND user_id = ?';
+      
+      db.query(updateSql, [grado, grupo, carrera, modalidad, id, req.usuario.id], (err) => {
+        if (err) {
+          console.error('Error al actualizar grupo:', err);
+          return handleError(res, 500, 'Error al actualizar el grupo', 'ERROR_DB');
+        }
+
+        // Obtener el grupo actualizado
+        db.query('SELECT * FROM grupos WHERE id = ?', [id], (err, results) => {
+          if (err) {
+            console.error('Error al obtener el grupo actualizado:', err);
+            return handleError(res, 500, 'Error al obtener el grupo actualizado', 'ERROR_DB');
+          }
+          res.json(results[0]);
+        });
+      });
+    }
+  );
+});
+
+// 🗑️ Eliminar un grupo (DELETE)
+app.delete('/grupos/:id', verificarToken, (req, res) => {
+  const { id } = req.params;
+
+  // Verificar que el grupo pertenece al usuario
+  db.query(
+    'SELECT * FROM grupos WHERE id = ? AND user_id = ?',
+    [id, req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al verificar grupo:', err);
+        return handleError(res, 500, 'Error al verificar el grupo', 'ERROR_DB');
+      }
+
+      if (results.length === 0) {
+        return handleError(res, 404, 'Grupo no encontrado o no autorizado', 'ERROR_NOT_FOUND');
+      }
+
+      // Eliminar el grupo
+      db.query(
+        'DELETE FROM grupos WHERE id = ? AND user_id = ?',
+        [id, req.usuario.id],
+        (err) => {
+          if (err) {
+            console.error('Error al eliminar grupo:', err);
+            return handleError(res, 500, 'Error al eliminar el grupo', 'ERROR_DB');
+          }
+          res.json({ message: 'Grupo eliminado correctamente' });
+        }
+      );
+    }
+  );
+});
+
+// 🟢 Obtener grupos asignados a un usuario
+app.get('/mis-grupos', verificarToken, (req, res) => {
+  const sql = `
+    SELECT g.* 
+    FROM grupos g
+    JOIN usuarios u ON g.user_id = u.id
+    WHERE u.id = ?
+  `;
+
+  db.query(sql, [req.usuario.id], (err, results) => {
+    if (err) {
+      console.error('Error obteniendo grupos del usuario:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+    res.json(results);
+  });
+});
+
 // 🟢 Obtener alumnos de un grupo
 app.get('/grupos/:id/alumnos', (req, res) => {
   const grupoId = req.params.id;
   const sql = `
-    SELECT alumnos.id, alumnos.nombre, alumnos.apellido, alumnos.grado 
+    SELECT alumnos.id, alumnos.nombre, alumnos.apellido 
     FROM alumnos 
     WHERE alumnos.id_grupo = ?
   `;
@@ -414,10 +540,62 @@ app.get('/grupos/:id/alumnos', (req, res) => {
   db.query(sql, [grupoId], (err, results) => {
     if (err) {
       console.error('Error obteniendo alumnos del grupo:', err);
-      return res.status(500).json({ error: 'Error en el servidor' });
+      return handleError(res, 500, 'Error en el servidor', 'ERROR_DB');
     }
     res.json(results);
   });
+});
+
+// 🟢 Agregar un alumno a un grupo
+app.post('/grupos/:id/alumnos', verificarToken, (req, res) => {
+  const { id } = req.params;
+  const { nombre, apellido } = req.body;
+
+  // Validar campos requeridos
+  if (!nombre || !apellido) {
+    return handleError(res, 400, 'Nombre y apellido son requeridos', 'ERROR_VALIDATION');
+  }
+
+  // Verificar que el grupo existe y pertenece al usuario
+  db.query(
+    'SELECT * FROM grupos WHERE id = ? AND user_id = ?',
+    [id, req.usuario.id],
+    (err, results) => {
+      if (err) {
+        console.error('Error al verificar grupo:', err);
+        return handleError(res, 500, 'Error al verificar el grupo', 'ERROR_DB');
+      }
+
+      if (results.length === 0) {
+        return handleError(res, 404, 'Grupo no encontrado o no autorizado', 'ERROR_NOT_FOUND');
+      }
+
+      // Agregar el alumno
+      db.query(
+        'INSERT INTO alumnos (nombre, apellido, id_grupo) VALUES (?, ?, ?)',
+        [nombre, apellido, id],
+        (err, result) => {
+          if (err) {
+            console.error('Error al agregar alumno:', err);
+            return handleError(res, 500, 'Error al agregar el alumno', 'ERROR_DB');
+          }
+
+          // Obtener el alumno recién creado
+          db.query(
+            'SELECT * FROM alumnos WHERE id = ?',
+            [result.insertId],
+            (err, results) => {
+              if (err) {
+                console.error('Error al obtener el alumno creado:', err);
+                return handleError(res, 500, 'Error al obtener el alumno creado', 'ERROR_DB');
+              }
+              res.status(201).json(results[0]);
+            }
+          );
+        }
+      );
+    }
+  );
 });
 
 // 🛑 Eliminar un alumno por ID
@@ -820,7 +998,7 @@ app.post('/educacion', verificarToken, (req, res) => {
     }
 
     db.query(
-        'INSERT INTO educacion (usuario_id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO educacion (usuario_id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [req.usuario.id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin],
         (err, result) => {
             if (err) {

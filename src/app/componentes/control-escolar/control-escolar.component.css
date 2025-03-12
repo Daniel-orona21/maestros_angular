@@ -1,3 +1,4 @@
+/* Layout base */
 .cuerpo {
     flex: 1; 
     display: flex;
@@ -6,50 +7,225 @@
     background-color: rgb(233, 233, 233);
     padding: 20px;
     width: 100%;
-    height: auto;
+    height: 100%;
+    overflow: auto;
 }
 
 .carta {
     background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    padding: 24px;
+    margin: 0 auto;
+    height: fit-content;
+}
+
+/* Encabezado y navegación */
+.encabezado {
     display: flex;
-    flex-direction: column;
-    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.encabezado h1 {
+    margin: 0;
+    color: #333;
+    font-size: 32px;
+}
+
+.titulo-con-regreso {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-regresar {
+    cursor: pointer;
+    font-size: 24px;
+    color: #1a3d5c;
+    transition: transform 0.3s ease;
+}
+
+.btn-regresar:hover {
+    transform: translateX(-3px);
+}
+
+/* Botones y acciones */
+.acciones {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.btn-modo, .btn-agregar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background-color: #f0f2f5;
+    color: #1a3d5c;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-modo:hover, .btn-agregar:hover {
+    background-color: #e8eef5;
+    transform: translateY(-2px);
+    color: #0f2844;
+}
+
+.btn-modo.activo {
+    background-color: #1a3d5c;
+    color: white;
+}
+
+.deleteactivo.activo {
+    background-color: red;
+}
+
+/* Buscador */
+.contenedor-buscar {
     position: relative;
-    border-radius: 20px;
-    padding: 20px;
-    flex: 1; 
-    box-sizing: border-box;
-    min-height: 200px;
+    margin-right: 10px;
 }
 
+.buscador {
+    padding: 8px 35px 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 200px;
+    transition: border-color 0.3s ease;
+}
 
-.carta h1 {
+.buscador:focus {
+    outline: none;
+    border-color: #1a3d5c;
+    box-shadow: 0 0 0 2px rgba(26, 61, 92, 0.1);
+}
+
+.contenedor-buscar .material-symbols-outlined {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+/* Estados y mensajes */
+.estado-carga,
+.mensaje-error,
+.sin-grupos,
+.sin-alumnos {
     text-align: center;
-    width: 100%;
+    padding: 40px;
+    color: #666;
 }
 
+.estado-carga span,
+.mensaje-error span,
+.sin-grupos span,
+.sin-alumnos span {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.estado-carga p,
+.mensaje-error p,
+.sin-grupos p,
+.sin-alumnos p {
+    margin: 8px 0;
+    font-size: 18px;
+}
+
+.subtexto {
+    font-size: 14px;
+    color: #888;
+}
+
+.mensaje-error {
+    color: #dc3545;
+}
+
+.mensaje-error span {
+    color: #dc3545;
+}
+
+@keyframes girar {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.girando {
+    animation: girar 1s linear infinite;
+}
+
+/* Grupos */
 .grupos {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    height: auto;
+    width: 100%;
 }
 
 .grupo {
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
     cursor: pointer;
     border: 1px solid transparent;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: rgb(255, 255, 255);
-    border-radius: 10px;
-    padding: 10px 15px;
-    height: auto;
-    transition: all .3s ease;
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    margin: 0;
 }
 
 .grupo:hover {
-    background-color: rgba(128, 128, 128, 0.413);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.296);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.grupo:hover .card-overlay {
+    opacity: 1;
+}
+
+.card-overlay span {
+    font-size: 36px;
+    color: white;
+}
+
+.modo-edicion:hover {
+    background-color: #1a3d5c61;
+}
+
+.modo-eliminacion:hover {
+    background-color: #dc354669;
 }
 
 .grupoFoto {
@@ -58,504 +234,370 @@
     align-items: center;
     justify-content: center;
     border-radius: 5px;
+    padding: 10px;
+}
+
+.grupoFoto h2 {
+    text-transform: uppercase;
 }
 
 .grupo-a {
-    background-color: #2196F3; 
+    background-color: #2196F3;
     color: white;
 }
 
 .grupo-b {
-    background-color: #4CAF50; 
+    background-color: #4CAF50;
     color: white;
 }
-
 
 .infoGrupo {
     display: flex;
     gap: 10px;
-}
-
-.botones {
     align-items: center;
-    display: inline-flex; 
-    width: 100%;
-    position: absolute;
-    top: 0px; 
-    left: 0;
-    padding: 10px;
-    box-sizing: border-box;
-    justify-content: space-between;
 }
 
-.confirm, .botones span {
-    cursor: pointer;
-    padding: 10px;
-    border-radius: 50%;
-    transition: all .3s ease;
-    background-color: transparent;
+.datosGrupo {
+    margin-left: 15px;
 }
 
-
-.confirm, .botones span:hover {
-    background-color: rgba(128, 128, 128, 0.21);
+.datosGrupo p {
+    margin: 5px 0;
 }
 
-
-
-.edit:active {
-    background-color: rgba(0, 195, 225, 0.779) !important;
-    transition: none;
-}
-
-.activo {
-    background-color:rgba(0, 195, 225, 0.296) !important;
-  }
-
-  
-  .delete:hover {
-    background-color:rgb(255, 208, 0) !important;
-}
-
-.delete:active {
-    background-color: rgb(225, 150, 0) !important;
-    transition: none;
-}
-
-.confirm:hover { 
-  background-color: rgba(225, 0, 0, 0.633) !important;
-}
-.confirm:active {
-    background-color:rgb(255, 0, 0) !important;
-    transition: none;
-}
-
- .deleteA {
-    background-color:rgba(255, 208, 0, 0.603) !important;
- }
-
-.confirm {
-    background-color:rgba(255, 0, 0, 0.502) !important;
-}
-
-.edicion {
+/* Tabla de alumnos */
+.acciones-tabla {
     display: flex;
+    justify-content: flex-end;
     gap: 10px;
+    margin-bottom: 20px;
 }
 
-.alumnos {
-    margin-top: 100px;
+.btn-asistencia,
+.btn-descargar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-asistencia {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.btn-descargar {
+    background-color: #f0f2f5;
+    color: #1a3d5c;
+}
+
+.btn-asistencia:hover,
+.btn-descargar:hover {
+    transform: translateY(-2px);
+}
+
+.tabla-container {
     width: 100%;
-    max-height: none; 
-    overflow: auto; 
-    background-color: transparent; 
+    overflow-x: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .tabla-alumnos {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; 
 }
 
-.tabla-alumnos span {
-    display: inline-flex;
-    position: absolute;
-    top: 25px;
-    right: 20px;
-    background-color: rgb(200, 200, 200);
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.botonAsistencia {
-    border-radius: 5px;
-    border: none;
-    font-weight: 800;
-}
-
-.botonAsistencia:hover, .tabla-alumnos span:hover {
-    background-color: rgba(182, 182, 182, 0.591);
-    color: white;
-}
-
-.botonAsistencia:active, .tabla-alumnos span:active {
-    background-color: white;
-    color: black
-}
-
-.tabla-alumnos thead {
-    position: sticky;
-    top: 0;
-    background-color: #333;
-    z-index: 2;
-}
-
-.tabla-alumnos th, .tabla-alumnos td {
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
-    vertical-align: middle; 
+.tabla-alumnos th,
+.tabla-alumnos td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
 }
 
 .tabla-alumnos th {
-    background-color: #333;
-    color: white;
-    font-weight: bold;
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+}
+
+.tabla-alumnos tr:hover {
+    background-color: #f8f9fa;
 }
 
 .fila-gris {
-    background-color: #f2f2f2;
+    background-color: #f8f9fa;
 }
 
-.fila-gris:hover, .tabla-alumnos tr:hover {
-    background-color: #ddd;
+.botones-asistencia {
+    display: flex;
+    gap: 8px;
 }
 
-.tabla-alumnos th button {
-    display: block;
-    margin: 5px auto; 
-    padding: 5px 10px;
-    font-size: 14px;
+.btn-asistencia-si,
+.btn-asistencia-no {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.tabla-alumnos input[type="checkbox"] {
-    transform: scale(1.2); 
-}
-
-.botonAsis {
-    background-color: transparent;
-    width: 40px;
-    height: 40px;
-    padding: 10px;
-    display: flex;
-    font-size: 18px;
+.btn-asistencia-si {
+    background-color: #4CAF50;
     color: white;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all .2s ease;
 }
 
-.si {
-    color: rgb(0, 174, 0);
-    border: 2px solid rgb(0, 174, 0);;
+.btn-asistencia-no {
+    background-color: #dc3545;
+    color: white;
 }
 
-.no {
-    color: red;
-    border: 2px solid red;
-}
-
-.no:hover {
-    background-color: rgba(255, 0, 0, 0.225);
-}
-
-.no:active {
-    background-color: transparent;
-    transition: none;
-}
-
-.si:hover {
-    background-color: rgba(72, 255, 0, 0.225);
-}
-
-.si:active {
-    background-color: transparent;
-    transition: none;
-}
-
-.botoneraAsis {
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-    display: flex;
-}
-
-
-
-  .modal {
+/* Modal */
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5); 
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     z-index: 1000;
-  }
-  
-  .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    width: 400px;
-    max-width: 90%;
-    text-align: center;
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  .modal h2 {
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  .modal-body {
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-body {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-  }
-  
-  .modal-body label {
-    font-weight: bold;
-    text-align: left;
-  }
-  
-  .modal-body input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.form-group {
+    margin-bottom: 0;
     width: 100%;
-  }
-  
-  .modal-footer {
-    margin-top: 20px;
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .modal-footer button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  .guardar {
-    background-color: #28a745;
-    color: white;
-  }
-  
-  .cancelar {
-    background-color: #dc3545;
-    color: white;
-  }
-  
-  .modal-footer button:hover {
-    opacity: 0.8;
-  }
-  
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
+    max-width: 400px;
+    margin: 0 auto;
+}
 
-  .contenedorBuscar {
-    display: flex;
-    align-items: center; 
-    position: relative;
-    width: fit-content; 
-    padding: 5px;
-    border-radius: 5px; 
-  }
-  
-  .buscador {
-    padding: 15px 50px 15px 15px; 
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: 500;
+    text-align: left;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     font-size: 16px;
-    border: none;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
     outline: none;
-    background-color: #e8e8e8;
-    border-radius: 10px;
-  }
-  
-  .contenedorBuscar span {
-    position: absolute;
-    right: 10px; 
+    border-color: #1a3d5c;
+    box-shadow: 0 0 0 2px rgba(26, 61, 92, 0.1);
+    transform: translateY(-1px);
+}
+
+.modal-footer {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+.btn-cancelar,
+.btn-guardar {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
     cursor: pointer;
-    color: rgb(165, 165, 165); 
-  }
+    transition: all 0.3s ease;
+}
 
+.btn-cancelar {
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+.btn-guardar {
+    background-color: #1a3d5c;
+    color: white;
+}
+
+.btn-guardar:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.btn-cancelar:hover {
+    background-color: #e5e5e5;
+}
+
+.btn-guardar:hover:not(:disabled) {
+    background-color: #0f2844;
+}
+
+.btn-cancelar:active,
+.btn-guardar:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+/* Dark Theme */
 :host-context(.dark-theme) {
-  .cuerpo {
-    background-color: #1a1a1a;
-  }
+    .cuerpo {
+        background-color: #1a1a1a;
+    }
 
-  .carta {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
+    .carta {
+        background-color: #2d2d2d;
+        color: #e0e0e0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
 
-  .carta h1 {
-    color: #e0e0e0;
-  }
+    .encabezado h1,
+    .btn-regresar {
+        color: #e0e0e0;
+    }
 
-  .grupo {
-    background-color: #363636;
-    border: 1px solid #424242;
-    color: #e0e0e0;
-  }
+    .btn-modo,
+    .btn-agregar,
+    .btn-descargar {
+        background-color: #363636;
+        color: #e0e0e0;
+    }
 
-  .grupo:hover {
-    background-color: #424242;
-    border-color: #1562a4;
-  }
+    .btn-modo:hover,
+    .btn-agregar:hover,
+    .btn-descargar:hover {
+        background-color: #424242;
+        color: #1562a4;
+    }
 
-  .grupo span {
-    color: #9e9e9e;
-  }
+    .btn-modo.activo {
+        background-color: #1562a4;
+        color: #ffffff;
+    }
 
-  .grupo:hover span {
-    color: #1562a4;
-  }
+    .grupo {
+        background-color: #363636;
+        border: 1px solid #424242;
+        color: #e0e0e0;
+    }
 
-  .datosGrupo p {
-    color: #9e9e9e;
-  }
+    .grupo:hover {
+        background-color: #424242;
+        border-color: #1562a4;
+    }
 
-  .datosGrupo strong {
-    color: #e0e0e0;
-  }
+    .buscador {
+        background-color: #363636;
+        border-color: #424242;
+        color: #e0e0e0;
+    }
 
-  .grupo-a {
-    background-color: #1976d2;
-  }
+    .buscador:focus {
+        border-color: #1562a4;
+    }
 
-  .grupo-b {
-    background-color: #2e7d32;
-  }
+    .tabla-container {
+        background-color: #2d2d2d;
+    }
 
-  .buscador {
-    background-color: #363636;
-    color: #e0e0e0;
-    border: 1px solid #424242;
-  }
+    .tabla-alumnos th {
+        background-color: #363636;
+        color: #e0e0e0;
+    }
 
-  .buscador::placeholder {
-    color: #9e9e9e;
-  }
+    .tabla-alumnos td {
+        color: #e0e0e0;
+        border-bottom-color: #424242;
+    }
 
-  .contenedorBuscar span {
-    color: #9e9e9e;
-  }
+    .tabla-alumnos tr:hover,
+    .fila-gris {
+        background-color: #363636;
+    }
 
-  .tabla-alumnos {
-    color: #e0e0e0;
-  }
+    .modal-content {
+        background-color: #2d2d2d;
+    }
 
-  .tabla-alumnos thead {
-    background-color: #1562a4;
-  }
+    .modal-content h2 {
+        color: #e0e0e0;
+    }
 
-  .tabla-alumnos th {
-    background-color: #1562a4;
-    color: #ffffff;
-    border-bottom: 1px solid #424242;
-  }
+    .form-group label {
+        color: #e0e0e0;
+    }
 
-  .tabla-alumnos td {
-    border-bottom: 1px solid #424242;
-  }
+    .form-group input,
+    .form-group select {
+        background-color: #363636;
+        border: 1px solid #424242;
+        color: #e0e0e0;
+    }
 
-  .fila-gris {
-    background-color: #363636;
-  }
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: #1562a4;
+        box-shadow: 0 0 0 2px rgba(21, 98, 164, 0.2);
+    }
 
-  .tabla-alumnos tr:hover,
-  .fila-gris:hover {
-    background-color: #424242;
-  }
+    .btn-cancelar {
+        background-color: #363636;
+        color: #e0e0e0;
+    }
 
-  .botonAsistencia {
-    background-color: #2d2d2d;
-    color: #e0e0e0;
-    border: 1px solid #424242;
-  }
+    .btn-guardar {
+        background-color: #1562a4;
+    }
 
-  .botonAsistencia:hover {
-    background-color: #363636;
-    color: #1562a4;
-  }
+    .btn-guardar:disabled {
+        background-color: #424242;
+    }
 
-  .tabla-alumnos span {
-    background-color: #363636;
-    color: #e0e0e0;
-  }
+    .estado-carga,
+    .mensaje-error,
+    .sin-grupos,
+    .sin-alumnos {
+        color: #9e9e9e;
+    }
 
-  .tabla-alumnos span:hover {
-    background-color: #424242;
-    color: #1562a4;
-  }
+    .subtexto {
+        color: #757575;
+    }
 
-  .si {
-    color: #4caf50;
-    border-color: #4caf50;
-  }
+    .datosGrupo p {
+        color: #9e9e9e;
+    }
 
-  .no {
-    color: #f44336;
-    border-color: #f44336;
-  }
-
-  .si:hover {
-    background-color: rgba(76, 175, 80, 0.1);
-  }
-
-  .no:hover {
-    background-color: rgba(244, 67, 54, 0.1);
-  }
-
-  .modal-content {
-    background-color: #2d2d2d;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  }
-
-  .modal h2 {
-    color: #e0e0e0;
-  }
-
-  .modal-body label {
-    color: #e0e0e0;
-  }
-
-  .modal-body input {
-    background-color: #363636;
-    border: 1px solid #424242;
-    color: #e0e0e0;
-  }
-
-  .modal-body input:focus {
-    border-color: #1562a4;
-    box-shadow: 0 0 0 2px rgba(21, 98, 164, 0.2);
-  }
-
-  .guardar {
-    background-color: #2e7d32;
-  }
-
-  .guardar:hover {
-    background-color: #388e3c;
-  }
-
-  .cancelar {
-    background-color: #c62828;
-  }
-
-  .cancelar:hover {
-    background-color: #d32f2f;
-  }
-
-  .mensajeNoGrupos {
-    color: #9e9e9e;
-  }
+    .datosGrupo strong {
+        color: #e0e0e0;
+    }
 }
