@@ -12,6 +12,7 @@ interface Alumno {
   nombre: string;
   apellido: string;
   seleccionado?: boolean;
+  asistencia?: 'presente' | 'ausente' | 'retardo' | null;
 }
 
 @Component({
@@ -27,6 +28,8 @@ export class ControlEscolarComponent implements OnInit {
   grupoSeleccionado: any = null;
   modoEliminacion: boolean = false;
   modoEdicion: boolean = false;
+  modoAsistencia: boolean = false;
+  fechaAsistencia: string = new Date().toISOString().split('T')[0];
   alumnoEditando: any = null;
   nuevoNombre: string = '';
   nuevoApellido: string = '';
@@ -113,6 +116,15 @@ export class ControlEscolarComponent implements OnInit {
         background: '#dc3545',
         color: '#fff'
       });
+    }
+  }
+
+  toggleModoAsistencia() {
+    this.modoAsistencia = !this.modoAsistencia;
+    if (this.modoAsistencia) {
+      this.modoEdicion = false;
+      this.modoEliminacion = false;
+      this.fechaAsistencia = new Date().toISOString().split('T')[0];
     }
   }
 
@@ -260,7 +272,8 @@ export class ControlEscolarComponent implements OnInit {
       next: (data) => {
         this.alumnos = data.map(alumno => ({
           ...alumno,
-          seleccionado: false
+          seleccionado: false,
+          asistencia: null
         }));
         this.alumnosFiltrados = [...this.alumnos];
       },
@@ -463,5 +476,25 @@ export class ControlEscolarComponent implements OnInit {
     });
   
     doc.save(`Lista_Alumnos_${this.grupoSeleccionado?.grado}_${this.grupoSeleccionado?.grupo}.pdf`);
+  }
+
+  marcarAsistencia(alumno: any, estado: 'presente' | 'ausente' | 'retardo'): void {
+    if (!this.modoAsistencia) return;
+    
+    if (alumno.asistencia === estado) {
+      alumno.asistencia = null; // Si ya está marcado, lo desmarcamos
+    } else {
+      alumno.asistencia = estado; // Si no está marcado o tiene otro estado, aplicamos el nuevo
+    }
+  }
+
+  guardarAsistencia(): void {
+    // TODO: Implementar la lógica para guardar la asistencia
+    console.log('Guardando asistencia para la fecha:', this.fechaAsistencia);
+    console.log('Estado de asistencia:', this.alumnos.map(alumno => ({
+      id: alumno.id,
+      nombre: alumno.nombre,
+      asistencia: alumno.asistencia
+    })));
   }
 }

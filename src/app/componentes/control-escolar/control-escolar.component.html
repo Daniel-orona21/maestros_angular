@@ -41,6 +41,21 @@
       </div>
     </div>
 
+    <!-- Controles de asistencia -->
+    <div class="controles-asistencia" *ngIf="alumnos.length > 0">
+      <button class="btn-guardar-asistencia" *ngIf="modoAsistencia" (click)="guardarAsistencia()">
+        <span class="material-symbols-outlined">save</span>
+        Guardar Asistencia
+      </button>
+      <div class="fecha-asistencia" *ngIf="modoAsistencia">
+        <input type="date" class="input-fecha" [(ngModel)]="fechaAsistencia">
+      </div>
+      <button class="btn-modo asistenciaactivo" [class.activo]="modoAsistencia" (click)="toggleModoAsistencia()">
+        <span class="material-symbols-outlined">fact_check</span>
+        Asistencia
+      </button>
+    </div>
+
     <!-- Estados de carga y error -->
     <div class="estado-carga" *ngIf="cargando">
       <span class="material-symbols-outlined girando">progress_activity</span>
@@ -95,6 +110,9 @@
             <tr>
               <th>Nombre</th>
               <th>Apellido</th>
+              <th *ngIf="modoAsistencia" class="columna-asistencia">Presente</th>
+              <th *ngIf="modoAsistencia" class="columna-asistencia">Ausente</th>
+              <th *ngIf="modoAsistencia" class="columna-asistencia">Retardo</th>
             </tr>
           </thead>
           <tbody>
@@ -106,6 +124,30 @@
                 (click)="modoEdicion ? abrirModalEdicion(alumno) : modoEliminacion ? toggleSeleccionAlumno(alumno) : null">
               <td>{{ alumno.nombre }}</td>
               <td>{{ alumno.apellido }}</td>
+              <td *ngIf="modoAsistencia" class="columna-asistencia">
+                <button class="btn-asistencia presente" 
+                        [class.activo]="alumno.asistencia === 'presente'"
+                        (click)="$event.stopPropagation(); marcarAsistencia(alumno, 'presente')" 
+                        title="Presente">
+                  <span class="material-symbols-outlined">check_circle</span>
+                </button>
+              </td>
+              <td *ngIf="modoAsistencia" class="columna-asistencia">
+                <button class="btn-asistencia ausente" 
+                        [class.activo]="alumno.asistencia === 'ausente'"
+                        (click)="$event.stopPropagation(); marcarAsistencia(alumno, 'ausente')" 
+                        title="Ausente">
+                  <span class="material-symbols-outlined">cancel</span>
+                </button>
+              </td>
+              <td *ngIf="modoAsistencia" class="columna-asistencia">
+                <button class="btn-asistencia retardo" 
+                        [class.activo]="alumno.asistencia === 'retardo'"
+                        (click)="$event.stopPropagation(); marcarAsistencia(alumno, 'retardo')" 
+                        title="Retardo">
+                  <span class="material-symbols-outlined">schedule</span>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>

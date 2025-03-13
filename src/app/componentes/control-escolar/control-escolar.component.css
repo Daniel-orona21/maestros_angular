@@ -100,7 +100,7 @@
 /* Buscador */
 .contenedor-buscar {
     position: relative;
-    margin-right: 10px;
+    margin-right: 0px;
 }
 
 .buscador {
@@ -170,11 +170,11 @@
 }
 
 .mensaje-error {
-    color: #dc3545;
+    color: #ff0019;
 }
 
 .mensaje-error span {
-    color: #dc3545;
+    color: #ff0019;
 }
 
 @keyframes girar {
@@ -731,6 +731,43 @@
     .sin-coincidencias .subtexto {
         color: #9e9e9e;
     }
+
+    .btn-asistencia:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-asistencia.presente span {
+        color: #81c784;
+    }
+
+    .btn-asistencia.ausente span {
+        color: #e57373;
+    }
+
+    .btn-asistencia.retardo span {
+        color: #ffd54f;
+    }
+
+    .btn-asistencia.presente.activo {
+        background-color: #81c784;
+    }
+
+    .btn-asistencia.ausente.activo {
+        background-color: #e57373;
+    }
+
+    .btn-asistencia.retardo.activo {
+        background-color: #ffd54f;
+    }
+
+    .btn-asistencia.activo span {
+        color: #2d2d2d;
+    }
+
+    .asistenciaactivo.activo {
+        background-color: #81c784;
+        color: #ffffff;
+    }
 }
 
 .sin-coincidencias {
@@ -762,4 +799,154 @@
 .sin-coincidencias .subtexto {
     font-size: 14px;
     color: #666;
+}
+
+.asistenciaactivo.activo {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.columna-asistencia {
+    width: 80px;
+    text-align: center !important;
+}
+
+.btn-asistencia {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    width: 40px;
+    height: 40px;
+}
+
+.btn-asistencia:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.btn-asistencia span {
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.btn-asistencia.presente span {
+    color: #4CAF50;
+}
+
+.btn-asistencia.ausente span {
+    color: #ff0019;
+}
+
+.btn-asistencia.retardo span {
+    color: #ffc107;
+}
+
+/* Estados activos */
+.btn-asistencia.presente.activo {
+    background-color: #4CAF50;
+}
+
+.btn-asistencia.ausente.activo {
+    background-color: #ff0019;
+}
+
+.btn-asistencia.retardo.activo {
+    background-color: #ffc107;
+}
+
+.btn-asistencia.activo span {
+    color: white;
+}
+
+.controles-asistencia {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 0 0 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.fecha-asistencia {
+    display: flex;
+    align-items: center;
+}
+
+.input-fecha {
+    height: 42px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #f0f2f5;
+    color: #1a3d5c;
+    transition: all 0.3s ease;
+}
+
+.input-fecha:focus {
+    outline: none;
+    background-color: #e8eef5;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-guardar-asistencia {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    background-color: #f0f2f5;
+    color: #1a3d5c;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn-guardar-asistencia:hover {
+    background-color: #e8eef5;
+    transform: translateY(-2px);
+}
+
+.btn-modo.asistenciaactivo {
+    height: 42px;
+    padding: 0 20px;
+    white-space: nowrap;
+}
+
+/* Dark Theme additions */
+:host-context(.dark-theme) {
+    .controles-asistencia {
+        border-bottom-color: #424242;
+    }
+
+    .input-fecha {
+        background-color: #363636;
+        color: #e0e0e0;
+    }
+
+    .input-fecha:focus {
+        background-color: #424242;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-guardar-asistencia {
+        background-color: #363636;
+        color: #e0e0e0;
+    }
+
+    .btn-guardar-asistencia:hover {
+        background-color: #424242;
+        color: #1562a4;
+    }
 }
