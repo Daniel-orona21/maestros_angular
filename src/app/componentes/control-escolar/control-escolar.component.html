@@ -11,7 +11,7 @@
       <h1 *ngIf="!grupoSeleccionado">Mis grupos</h1>
 
       <div class="acciones">
-        <div class="contenedor-buscar" *ngIf="grupoSeleccionado">
+        <div  class="contenedor-buscar" *ngIf="grupoSeleccionado && alumnos.length > 0">
           <input 
             type="text" 
             placeholder="Buscar alumno..."
@@ -26,6 +26,10 @@
           <span class="material-symbols-outlined">edit</span>
           Editar
         </button>
+        <button *ngIf="modoEliminacion && alumnos.length > 0" class="btn-confirmar-eliminar" (click)="eliminarAlumnosSeleccionados()">
+          <span class="material-symbols-outlined">delete_forever</span>
+          Confirmar
+        </button>
         <button *ngIf="alumnos.length > 0" class="btn-modo deleteactivo" [class.activo]="modoEliminacion" (click)="toggleModoEliminacion()">
           <span class="material-symbols-outlined">delete</span>
           Eliminar
@@ -34,10 +38,6 @@
           <span class="material-symbols-outlined">add</span>
           {{ grupoSeleccionado ? 'Agregar Alumno' : 'Agregar Grupo' }}
         </button>
-        <!-- <button class="btn-agregar" (click)="descargarPDF()">
-          <span class="material-symbols-outlined">download</span>
-          Descargar reporte
-        </button> -->
       </div>
     </div>
 
@@ -89,37 +89,33 @@
 
     <!-- Contenido de alumnos -->
     <div class="alumnos" *ngIf="grupoSeleccionado && !cargando && !error">
-      <div class="acciones-tabla" *ngIf="modoEliminacion">
-        <button class="btn-confirmar-eliminar" (click)="eliminarAlumnosSeleccionados()">
-          <span class="material-symbols-outlined">delete_forever</span>
-          Confirmar Eliminación
-        </button>
-      </div>
-
       <div *ngIf="alumnos.length > 0; else noAlumnos" class="tabla-container">
         <table class="tabla-alumnos">
           <thead>
             <tr>
               <th>Nombre</th>
               <th>Apellido</th>
-              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let alumno of alumnosFiltrados; let i = index" 
                 [class.fila-gris]="i % 2 === 0"
                 [class.modo-edicion]="modoEdicion"
-                (click)="modoEdicion && abrirModalEdicion(alumno)">
+                [class.modo-eliminacion]="modoEliminacion"
+                [class.seleccionado-eliminar]="modoEliminacion && alumno.seleccionado"
+                (click)="modoEdicion ? abrirModalEdicion(alumno) : modoEliminacion ? toggleSeleccionAlumno(alumno) : null">
               <td>{{ alumno.nombre }}</td>
               <td>{{ alumno.apellido }}</td>
-              <td>
-                <ng-container *ngIf="modoEliminacion">
-                  <input type="checkbox" [(ngModel)]="alumno.seleccionado" />
-                </ng-container>
-              </td>
             </tr>
           </tbody>
         </table>
+        
+        <!-- Mensaje cuando no hay coincidencias -->
+        <div class="sin-coincidencias" *ngIf="alumnosFiltrados.length === 0">
+          <span class="material-symbols-outlined">search_off</span>
+          <p>No se encontraron coincidencias</p>
+          <p class="subtexto">Intenta con otros términos de búsqueda</p>
+        </div>
       </div>
 
       <ng-template #noAlumnos>
@@ -135,7 +131,7 @@
   <!-- Modales -->
   <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
-      <h2>{{ grupoEditando.id ? 'Editar' : 'Agregar' }} {{ grupoSeleccionado ? 'Alumno' : 'Grupo' }}</h2>
+      <h2>{{ grupoSeleccionado ? (alumnoEditando ? 'Editar Alumno' : 'Agregar Alumno') : (grupoEditando.id ? 'Editar' : 'Agregar') + ' Grupo' }}</h2>
       
       <!-- Contenido del modal para grupos -->
       <div class="modal-body" *ngIf="!grupoSeleccionado">

@@ -80,6 +80,19 @@ export class ControlEscolarComponent implements OnInit {
     this.modoEdicion = !this.modoEdicion;
     if (this.modoEdicion) {
       this.modoEliminacion = false;
+      Swal.fire({
+        title: 'Modo Edición Activado',
+        text: 'Haz clic sobre un alumno para editarlo',
+        icon: 'info',
+        iconColor: '#ffffff',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#1a3d5c',
+        color: '#fff'
+      });
     }
   }
 
@@ -87,6 +100,19 @@ export class ControlEscolarComponent implements OnInit {
     this.modoEliminacion = !this.modoEliminacion;
     if (this.modoEliminacion) {
       this.modoEdicion = false;
+      Swal.fire({
+        title: 'Modo Eliminación Activado',
+        text: 'Selecciona los alumnos que deseas eliminar',
+        icon: 'info',
+        iconColor: '#ffffff',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#dc3545',
+        color: '#fff'
+      });
     }
   }
 
@@ -257,24 +283,70 @@ export class ControlEscolarComponent implements OnInit {
     );
   }
 
-  eliminarAlumnosSeleccionados(): void {
-    const alumnosAEliminar = this.alumnos.filter(alumno => alumno.seleccionado).map(alumno => alumno.id);
+  toggleSeleccionAlumno(alumno: any): void {
+    if (!this.modoEliminacion) return;
+    alumno.seleccionado = !alumno.seleccionado;
+  }
 
-    if (alumnosAEliminar.length === 0) {
-      alert('Selecciona al menos un alumno para eliminar.');
+  eliminarAlumnosSeleccionados(): void {
+    const alumnosSeleccionados = this.alumnos.filter(alumno => alumno.seleccionado);
+
+    if (alumnosSeleccionados.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin selección',
+        text: 'Selecciona al menos un alumno para eliminar.',
+        confirmButtonColor: '#1a3d5c'
+      });
       return;
     }
 
-    if (!confirm(`¿Eliminar ${alumnosAEliminar.length} alumno(s)?`)) return;
+    const listaAlumnos = alumnosSeleccionados
+      .map(alumno => `• ${alumno.nombre} ${alumno.apellido}`)
+      .join('\n');
 
-    alumnosAEliminar.forEach(alumnoId => {
-      this.gruposService.eliminarAlumno(alumnoId).subscribe({
-        next: () => {
-          this.alumnos = this.alumnos.filter(alumno => !alumnosAEliminar.includes(alumno.id));
-          this.modoEliminacion = false;
-        },
-        error: err => console.error('Error eliminando alumno:', err)
-      });
+    Swal.fire({
+      title: '¿Estás seguro?',
+      html: `Se eliminarán los siguientes alumnos:<br><br><pre style="text-align: left; margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 5px; font-family: Arial, sans-serif;">${listaAlumnos}</pre>`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const alumnosAEliminar = alumnosSeleccionados.map(alumno => alumno.id);
+        
+        // Crear un array de promesas para todas las eliminaciones
+        const promesasEliminacion = alumnosAEliminar.map(alumnoId =>
+          this.gruposService.eliminarAlumno(alumnoId).toPromise()
+        );
+
+        // Ejecutar todas las promesas
+        Promise.all(promesasEliminacion)
+          .then(() => {
+            this.alumnos = this.alumnos.filter(alumno => !alumnosAEliminar.includes(alumno.id));
+            this.alumnosFiltrados = [...this.alumnos];
+            this.modoEliminacion = false;
+
+            Swal.fire({
+              icon: 'success',
+              title: '¡Eliminados!',
+              text: 'Los alumnos han sido eliminados correctamente',
+              confirmButtonColor: '#1a3d5c'
+            });
+          })
+          .catch(error => {
+            console.error('Error eliminando alumnos:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Hubo un problema al eliminar los alumnos',
+              confirmButtonColor: '#1a3d5c'
+            });
+          });
+      }
     });
   }
 
