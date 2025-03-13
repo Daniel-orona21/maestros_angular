@@ -1821,8 +1821,21 @@ app.put('/asistencias', verificarToken, (req, res) => {
     new Promise((resolve, reject) => {
       const sql = 'UPDATE asistencias SET estado = ? WHERE alumno_id = ? AND fecha = ?';
       db.query(sql, [a.estado, a.alumno_id, a.fecha], (err, result) => {
-        if (err) reject(err);
-        else resolve(result);
+        if (err) {
+          console.error('Error en actualización individual:', err);
+          reject(err);
+        } else {
+          if (result.affectedRows === 0) {
+            // Si no se actualizó ninguna fila, intentar insertar
+            const insertSql = 'INSERT INTO asistencias (alumno_id, fecha, estado) VALUES (?, ?, ?)';
+            db.query(insertSql, [a.alumno_id, a.fecha, a.estado], (err, insertResult) => {
+              if (err) reject(err);
+              else resolve(insertResult);
+            });
+          } else {
+            resolve(result);
+          }
+        }
       });
     })
   );

@@ -2,16 +2,16 @@
   <div class="carta">
     <div class="encabezado">
       <div class="titulo-con-regreso" *ngIf="grupoSeleccionado">
-        <span (click)="cargarGrupos()" class="material-symbols-outlined btn-regresar">arrow_back</span>
-        <div class="titulo">
-          <h1>Alumnos de {{ grupoSeleccionado.grado }}°</h1>
-          <h1 class="grupoT">{{ grupoSeleccionado.grupo }}</h1>
-        </div>
+        <span (click)="cargarGrupos()" class="material-symbols-outlined btn-regresar" *ngIf="vistaActual === 'alumnos'">arrow_back</span>
+        <span (click)="generarReporteAsistencias()" class="material-symbols-outlined btn-regresar" *ngIf="vistaActual === 'reporte'">arrow_back</span>
+        <h1 *ngIf="vistaActual === 'alumnos'">Alumnos de {{ grupoSeleccionado.grado }}° {{ grupoSeleccionado.grupo }}</h1>
+        <h1 *ngIf="vistaActual === 'reporte'">Reporte de Asistencias</h1>
       </div>
       <h1 *ngIf="!grupoSeleccionado">Mis grupos</h1>
 
-      <div class="acciones">
-        <div  class="contenedor-buscar" *ngIf="grupoSeleccionado && alumnos.length > 0">
+      <!-- Acciones para la vista de alumnos -->
+      <div class="acciones" *ngIf="vistaActual === 'alumnos'">
+        <div class="contenedor-buscar" *ngIf="grupoSeleccionado && alumnos.length > 0">
           <input 
             type="text" 
             placeholder="Buscar alumno..."
@@ -36,13 +36,48 @@
         </button>
         <button class="btn-agregar" (click)="abrirModal()">
           <span class="material-symbols-outlined">add</span>
-          {{ grupoSeleccionado ? 'Agregar Alumno' : 'Agregar Grupo' }}
+          Agregar Alumno
+        </button>
+      </div>
+
+      <!-- Acciones para la vista de grupos -->
+      <div class="acciones" *ngIf="vistaActual === 'grupos'">
+        <button class="btn-agregar" (click)="abrirModal()">
+          <span class="material-symbols-outlined">add</span>
+          Agregar Grupo
+        </button>
+      </div>
+
+      <!-- Acciones para la vista de reporte -->
+      <div class="acciones" *ngIf="vistaActual === 'reporte'">
+        <div class="selectores-fecha">
+          <select class="select-fecha" [(ngModel)]="mesSeleccionado" (change)="cargarAsistenciasMes()">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+          </select>
+          <select class="select-fecha" [(ngModel)]="anioSeleccionado" (change)="cargarAsistenciasMes()">
+            <option *ngFor="let anio of aniosDisponibles" [value]="anio">{{ anio }}</option>
+          </select>
+        </div>
+        <button class="btn-descargar-reporte" (click)="descargarReportePDF()">
+          <span class="material-symbols-outlined">download</span>
+          Descargar
         </button>
       </div>
     </div>
 
     <!-- Controles de asistencia -->
-    <div class="controles-asistencia" *ngIf="alumnos.length > 0">
+    <div class="controles-asistencia" *ngIf="alumnos.length > 0 && vistaActual === 'alumnos'">
       <button class="btn-reporte" *ngIf="grupoSeleccionado" (click)="generarReporteAsistencias()">
         <span class="material-symbols-outlined">description</span>
         Reporte de Asistencias
@@ -71,8 +106,8 @@
       <p>{{ error }}</p>
     </div>
 
-    <!-- Contenido de grupos -->
-    <div class="grupos" *ngIf="!grupoSeleccionado && !cargando && !error">
+    <!-- Vista de grupos -->
+    <div class="grupos" *ngIf="vistaActual === 'grupos' && !cargando && !error">
       <ng-container *ngIf="grupos.length > 0; else noGrupos">
         <div *ngFor="let grupo of grupos" 
              class="grupo" 
@@ -106,8 +141,8 @@
       </div>
     </ng-template>
 
-    <!-- Contenido de alumnos -->
-    <div class="alumnos" *ngIf="grupoSeleccionado && !cargando && !error">
+    <!-- Vista de alumnos -->
+    <div class="alumnos" *ngIf="vistaActual === 'alumnos' && grupoSeleccionado && !cargando && !error">
       <div *ngIf="alumnos.length > 0; else noAlumnos" class="tabla-container">
         <table class="tabla-alumnos">
           <thead>
@@ -171,6 +206,57 @@
           <p class="subtexto">Haz clic en "Agregar Alumno" para comenzar</p>
         </div>
       </ng-template>
+    </div>
+
+    <!-- Vista de reporte -->
+    <div class="reporte-container" *ngIf="vistaActual === 'reporte'">
+      <div class="reporte-content">
+        <!-- Leyenda -->
+        <div class="reporte-leyenda">
+          <h3 class="leyendastxt">Leyendas:</h3>
+          <div class="contenedorLeyendas">
+          <div class="leyenda-item">
+            <span class="leyenda-letra p">P</span>
+            <span>= Presente</span>
+          </div>
+          <div class="leyenda-item">
+            <span class="leyenda-letra l">L</span>
+            <span>= Tarde</span>
+          </div>
+          <div class="leyenda-item">
+            <span class="leyenda-letra a">A</span>
+            <span>= Ausente</span>
+          </div>
+          </div>
+        </div>
+
+        <!-- Tabla de asistencias -->
+        <div class="reporte-tabla">
+          <h2 class="titulo-mes">Asistencias de {{ obtenerNombreMes(mesSeleccionado) }} {{ anioSeleccionado }}</h2>
+          <table class="tabla-asistencias">
+            <thead>
+              <tr>
+                <th class="nombre-alumno">Estudiantes</th>
+                <th *ngFor="let dia of diasDelMes" class="dia-header">{{ dia }}</th>
+                <th class="totales-header">TP</th>
+                <th class="totales-header">TL</th>
+                <th class="totales-header">TA</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let alumno of alumnos">
+                <td class="nombre-alumno">{{ alumno.nombre }} {{ alumno.apellido }}</td>
+                <td *ngFor="let dia of diasDelMes" class="asistencia-cell" [attr.data-estado]="getAsistenciaEstado(alumno, dia)">
+                  {{ getAsistenciaMarca(getAsistenciaEstado(alumno, dia)) }}
+                </td>
+                <td class="totales-cell">{{ getTotalAsistencias(alumno, 'presente') }}</td>
+                <td class="totales-cell">{{ getTotalAsistencias(alumno, 'retardo') }}</td>
+                <td class="totales-cell">{{ getTotalAsistencias(alumno, 'ausente') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 

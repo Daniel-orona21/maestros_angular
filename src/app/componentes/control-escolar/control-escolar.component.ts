@@ -34,6 +34,8 @@ export class ControlEscolarComponent implements OnInit {
   modoEliminacion: boolean = false;
   modoEdicion: boolean = false;
   modoAsistencia: boolean = false;
+  modoReporte: boolean = false;
+  vistaActual: 'grupos' | 'alumnos' | 'reporte' = 'grupos';
   fechaAsistencia: string = new Date().toISOString().split('T')[0];
   alumnoEditando: any = null;
   nuevoNombre: string = '';
@@ -50,10 +52,23 @@ export class ControlEscolarComponent implements OnInit {
     modalidad: 'Clásica'
   };
   hayAsistenciasGuardadas = false;
+  mesSeleccionado: number;
+  anioSeleccionado: number;
+  aniosDisponibles: number[] = [];
+  diasDelMes: number[] = [];
+  asistenciasMes: any[] = [];
 
   @Output() actualizarBreadcrumb = new EventEmitter<string | null>();
 
-  constructor(private gruposService: GruposService) {}
+  constructor(private gruposService: GruposService) {
+    const fechaActual = new Date();
+    this.mesSeleccionado = fechaActual.getMonth() + 1;
+    this.anioSeleccionado = fechaActual.getFullYear();
+    
+    // Generar años disponibles (año actual y 2 años anteriores)
+    const anioActual = fechaActual.getFullYear();
+    this.aniosDisponibles = [anioActual - 2, anioActual - 1, anioActual];
+  }
 
   ngOnInit(): void {
     this.cargarGrupos();
@@ -62,10 +77,12 @@ export class ControlEscolarComponent implements OnInit {
   cargarGrupos(): void {
     this.cargando = true;
     this.error = null;
+    this.vistaActual = 'grupos';
     // Desactivar todos los modos
     this.modoEdicion = false;
     this.modoEliminacion = false;
     this.modoAsistencia = false;
+    this.modoReporte = false;
     this.gruposService.obtenerGrupos().subscribe({
       next: (data) => {
         this.grupos = data;
@@ -319,6 +336,7 @@ export class ControlEscolarComponent implements OnInit {
 
   seleccionarGrupo(grupo: any): void {
     this.grupoSeleccionado = grupo;
+    this.vistaActual = 'alumnos';
     
     const breadcrumbTexto = `${grupo.grado}° ${grupo.grupo}`;
     this.actualizarBreadcrumb.emit(breadcrumbTexto);
@@ -540,9 +558,13 @@ export class ControlEscolarComponent implements OnInit {
     // Verificar si hay asistencias guardadas para la fecha actual
     this.gruposService.verificarAsistencias(this.grupoSeleccionado.id, this.fechaAsistencia).subscribe({
       next: (existenAsistencias) => {
-        if (existenAsistencias && oldEstado !== alumno.asistencia) {
-          this.hayAsistenciasGuardadas = true;
-        }
+        // Marcar que hay asistencias guardadas si:
+        // 1. Ya existen asistencias para esta fecha
+        // 2. O si estamos agregando una nueva asistencia
+        this.hayAsistenciasGuardadas = existenAsistencias || (alumno.asistencia !== null);
+      },
+      error: (error) => {
+        console.error('Error al verificar asistencias:', error);
       }
     });
   }
@@ -644,8 +666,176 @@ export class ControlEscolarComponent implements OnInit {
     }
   }
 
-  generarReporteAsistencias(): void {
-    // TODO: Implementar la generación del reporte de asistencias
-    console.log('Generando reporte de asistencias...');
+  async generarReporteAsistencias() {
+    this.vistaActual = this.vistaActual === 'reporte' ? 'alumnos' : 'reporte';
+    if (this.vistaActual === 'reporte') {
+      await this.cargarAsistenciasMes();
+      this.actualizarBreadcrumb.emit(`${this.grupoSeleccionado.grado}° ${this.grupoSeleccionado.grupo} > Reporte de Asistencias`);
+    } else {
+      this.actualizarBreadcrumb.emit(`${this.grupoSeleccionado.grado}° ${this.grupoSeleccionado.grupo}`);
+    }
+  }
+
+  async cargarAsistenciasMes() {
+    if (!this.grupoSeleccionado || !this.mesSeleccionado || !this.anioSeleccionado) return;
+
+    try {
+      // Calcular el último día del mes
+      const ultimoDia = new Date(this.anioSeleccionado, this.mesSeleccionado, 0).getDate();
+      
+      // Generar array con todos los días del mes
+      this.diasDelMes = Array.from({length: ultimoDia}, (_, i) => i + 1);
+      
+      // Limpiar asistencias previas
+      this.asistenciasMes = [];
+      
+      // Cargar asistencias para cada día del mes
+      for (const dia of this.diasDelMes) {
+        const fechaDia = `${this.anioSeleccionado}-${String(this.mesSeleccionado).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        try {
+          const asistencias = await this.gruposService.obtenerAsistenciasPorFecha(
+            this.grupoSeleccionado.id,
+            fechaDia
+          ).toPromise();
+          
+          if (asistencias) {
+            this.asistenciasMes.push({
+              fecha: fechaDia,
+              asistencias: asistencias
+            });
+          }
+        } catch (error) {
+          console.error(`Error al cargar asistencias para ${fechaDia}:`, error);
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar las asistencias:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron cargar las asistencias del mes',
+        confirmButtonColor: '#1a3d5c'
+      });
+    }
+  }
+
+  getAsistenciaEstado(alumno: any, dia: number): string {
+    const fechaDia = `${this.anioSeleccionado}-${String(this.mesSeleccionado).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+    
+    const asistenciaDia = this.asistenciasMes.find(a => a.fecha === fechaDia);
+    if (!asistenciaDia) return '';
+
+    const asistenciaAlumno = asistenciaDia.asistencias.find((a: any) => a.alumno_id === alumno.id);
+    return asistenciaAlumno ? asistenciaAlumno.estado.toLowerCase() : '';
+  }
+
+  getAsistenciaMarca(estado: string): string {
+    switch (estado.toLowerCase()) {
+      case 'presente': return 'P';
+      case 'ausente': return 'A';
+      case 'retardo': return 'L';
+      default: return '';
+    }
+  }
+
+  getTotalAsistencias(alumno: any, tipo: string): number {
+    return this.asistenciasMes.reduce((total, dia) => {
+      const asistenciaAlumno = dia.asistencias.find((a: any) => a.alumno_id === alumno.id);
+      return total + (asistenciaAlumno && asistenciaAlumno.estado.toLowerCase() === tipo ? 1 : 0);
+    }, 0);
+  }
+
+  obtenerNombreMes(mes: number): string {
+    const meses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return meses[mes - 1];
+  }
+
+  descargarReportePDF() {
+    const doc = new jsPDF();
+    
+    // Configurar título
+    doc.setFontSize(16);
+    doc.text(`Reporte de Asistencias - ${this.obtenerNombreMes(this.mesSeleccionado)} ${this.anioSeleccionado}`, 14, 15);
+    doc.text(`${this.grupoSeleccionado.grado}° ${this.grupoSeleccionado.grupo}`, 14, 25);
+    
+    // Configurar leyenda
+    doc.setFontSize(10);
+    doc.text('Leyendas:', 14, 35);
+    doc.setTextColor(76, 175, 80); // Verde
+    doc.text('P = Presente', 14, 42);
+    doc.setTextColor(0, 0, 0); // Negro
+    doc.text('L = Tarde', 50, 42);
+    doc.setTextColor(255, 0, 0); // Rojo
+    doc.text('A = Ausente', 85, 42);
+    doc.setTextColor(0, 0, 0); // Restablecer color
+
+    // Preparar datos para la tabla
+    const columnas = ['Estudiantes', ...this.diasDelMes.map(dia => dia.toString()), 'TP', 'TL', 'TA'];
+    
+    const filas = this.alumnos.map(alumno => [
+      `${alumno.nombre} ${alumno.apellido}`,
+      ...this.diasDelMes.map(dia => this.getAsistenciaMarca(this.getAsistenciaEstado(alumno, dia))),
+      this.getTotalAsistencias(alumno, 'presente').toString(),
+      this.getTotalAsistencias(alumno, 'retardo').toString(),
+      this.getTotalAsistencias(alumno, 'ausente').toString()
+    ]);
+
+    // Generar tabla
+    autoTable(doc, {
+      head: [columnas],
+      body: filas,
+      startY: 50,
+      headStyles: {
+        fillColor: [25, 118, 210], // Color azul del encabezado
+        textColor: 255,
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { // Columna de nombres
+          cellWidth: 50,
+          fillColor: [21, 101, 192],
+          textColor: 255,
+          halign: 'left'
+        },
+        [columnas.length - 3]: { // Columna TP
+          fillColor: [117, 117, 117],
+          textColor: 255,
+          halign: 'center'
+        },
+        [columnas.length - 2]: { // Columna TL
+          fillColor: [117, 117, 117],
+          textColor: 255,
+          halign: 'center'
+        },
+        [columnas.length - 1]: { // Columna TA
+          fillColor: [117, 117, 117],
+          textColor: 255,
+          halign: 'center'
+        }
+      },
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+      },
+      didDrawCell: (data) => {
+        // Colorear las marcas de asistencia
+        if (data.section === 'body' && data.column.index > 0 && data.column.index < columnas.length - 3) {
+          const texto = data.cell.text[0];
+          if (texto === 'P') {
+            doc.setTextColor(76, 175, 80); // Verde para Presente
+          } else if (texto === 'A') {
+            doc.setTextColor(255, 0, 0); // Rojo para Ausente
+          } else if (texto === 'L') {
+            doc.setTextColor(0, 0, 0); // Negro para Tarde
+          }
+        }
+      }
+    });
+    
+    // Guardar el PDF
+    doc.save(`Asistencias_${this.grupoSeleccionado.grado}${this.grupoSeleccionado.grupo}_${this.obtenerNombreMes(this.mesSeleccionado)}_${this.anioSeleccionado}.pdf`);
   }
 }

@@ -93,7 +93,13 @@ export class InicioComponent implements OnInit {
       this.breadcrumb = `Mi perfil > ${valor}`;
     } else if (this.vistaSeleccionada === 'Control escolar') {
       if (valor && valor !== 'Control escolar') {
-        this.breadcrumb = `Control escolar > ${valor}`;
+        if (valor.includes(' > ')) {
+          // Si el valor contiene ' > ', es una navegación a reporte
+          this.breadcrumb = `Control escolar > ${valor}`;
+        } else {
+          // Si no, es una navegación normal a grupo
+          this.breadcrumb = `Control escolar > ${valor}`;
+        }
       } else {
         this.breadcrumb = 'Control escolar';
       }
@@ -108,12 +114,15 @@ export class InicioComponent implements OnInit {
         if (this.controlEscolarComponent) {
           this.controlEscolarComponent.cargarGrupos();
         }
+      } else if (part.includes('°') && this.breadcrumb?.includes('Reporte de Asistencias')) {
+        if (this.controlEscolarComponent) {
+          this.controlEscolarComponent.generarReporteAsistencias();
+        }
       }
     } else if (this.breadcrumb?.startsWith('Mi perfil')) {
       if (part === 'Mi perfil') {
         this.resetDashboard();
       }
-      // Si es otra parte (Experiencias, Educación, etc.), no hacemos nada
     }
   }
 
