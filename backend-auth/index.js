@@ -598,20 +598,30 @@ app.post('/grupos/:id/alumnos', verificarToken, (req, res) => {
   );
 });
 
-// 🛑 Eliminar un alumno por ID
-app.delete('/alumnos/:id', (req, res) => {
+// 🗑️ Eliminar alumno (DELETE)
+app.delete('/alumnos/:id', verificarToken, (req, res) => {
   const alumnoId = req.params.id;
-  const sql = 'DELETE FROM alumnos WHERE id = ?';
 
-  db.query(sql, [alumnoId], (err, result) => {
+  // Primero eliminar las asistencias asociadas al alumno
+  db.query('DELETE FROM asistencias WHERE alumno_id = ?', [alumnoId], (err) => {
     if (err) {
-      console.error('Error eliminando alumno:', err);
-      return res.status(500).json({ error: 'Error en el servidor' });
+      console.error('Error eliminando asistencias del alumno:', err);
+      return handleError(res, 500, 'Error al eliminar las asistencias del alumno', 'ERROR_DB');
     }
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Alumno no encontrado' });
-    }
-    res.json({ message: 'Alumno eliminado correctamente' });
+
+    // Después de eliminar las asistencias, eliminar al alumno
+    db.query('DELETE FROM alumnos WHERE id = ?', [alumnoId], (err, result) => {
+      if (err) {
+        console.error('Error eliminando alumno:', err);
+        return handleError(res, 500, 'Error al eliminar el alumno', 'ERROR_DB');
+      }
+
+      if (result.affectedRows === 0) {
+        return handleError(res, 404, 'Alumno no encontrado', 'ERROR_NOT_FOUND');
+      }
+
+      res.json({ message: 'Alumno eliminado correctamente' });
+    });
   });
 });
 
@@ -1771,6 +1781,105 @@ app.delete('/delete-curriculum', verificarToken, (req, res) => {
     console.error('Error al procesar la eliminación del currículum:', error);
     handleError(res, 500, 'Error al procesar la eliminación del currículum', 'ERROR_GENERAL');
   }
+});
+
+// 📝 Guardar asistencia de alumnos (POST)
+app.post('/asistencias', verificarToken, (req, res) => {
+  const { asistencias } = req.body;
+  
+  if (!Array.isArray(asistencias) || asistencias.length === 0) {
+    return handleError(res, 400, 'Datos de asistencia inválidos', 'ERROR_VALIDATION');
+  }
+
+  // Preparar la consulta para inserción múltiple
+  const values = asistencias.map(a => [a.alumno_id, a.fecha, a.estado]);
+  const sql = 'INSERT INTO asistencias (alumno_id, fecha, estado) VALUES ?';
+
+  db.query(sql, [values], (err, result) => {
+    if (err) {
+      console.error('Error al guardar asistencias:', err);
+      return handleError(res, 500, 'Error al guardar las asistencias', 'ERROR_DB');
+    }
+
+    res.json({
+      message: 'Asistencias guardadas correctamente',
+      affectedRows: result.affectedRows
+    });
+  });
+});
+
+// 📝 Actualizar asistencia de alumnos (PUT)
+app.put('/asistencias', verificarToken, (req, res) => {
+  const { asistencias } = req.body;
+  
+  if (!Array.isArray(asistencias) || asistencias.length === 0) {
+    return handleError(res, 400, 'Datos de asistencia inválidos', 'ERROR_VALIDATION');
+  }
+
+  // Preparar las consultas de actualización
+  const updates = asistencias.map(a => 
+    new Promise((resolve, reject) => {
+      const sql = 'UPDATE asistencias SET estado = ? WHERE alumno_id = ? AND fecha = ?';
+      db.query(sql, [a.estado, a.alumno_id, a.fecha], (err, result) => {
+        if (err) reject(err);
+        else resolve(result);
+      });
+    })
+  );
+
+  Promise.all(updates)
+    .then(results => {
+      res.json({
+        message: 'Asistencias actualizadas correctamente',
+        affectedRows: results.reduce((sum, r) => sum + r.affectedRows, 0)
+      });
+    })
+    .catch(err => {
+      console.error('Error al actualizar asistencias:', err);
+      handleError(res, 500, 'Error al actualizar las asistencias', 'ERROR_DB');
+    });
+});
+
+// 📝 Verificar si existen asistencias para un grupo y fecha
+app.get('/grupos/:grupoId/asistencias/:fecha', verificarToken, (req, res) => {
+  const { grupoId, fecha } = req.params;
+
+  const sql = `
+    SELECT COUNT(*) as count 
+    FROM asistencias a 
+    INNER JOIN alumnos al ON a.alumno_id = al.id 
+    WHERE al.id_grupo = ? AND a.fecha = ?
+  `;
+
+  db.query(sql, [grupoId, fecha], (err, results) => {
+    if (err) {
+      console.error('Error al verificar asistencias:', err);
+      return handleError(res, 500, 'Error al verificar asistencias', 'ERROR_DB');
+    }
+
+    res.json({ existe: results[0].count > 0 });
+  });
+});
+
+// 📝 Obtener asistencias por fecha
+app.get('/grupos/:grupoId/asistencias/fecha/:fecha', verificarToken, (req, res) => {
+  const { grupoId, fecha } = req.params;
+
+  const sql = `
+    SELECT a.alumno_id, a.fecha, a.estado
+    FROM asistencias a
+    INNER JOIN alumnos al ON a.alumno_id = al.id
+    WHERE al.id_grupo = ? AND a.fecha = ?
+  `;
+
+  db.query(sql, [grupoId, fecha], (err, results) => {
+    if (err) {
+      console.error('Error al obtener asistencias:', err);
+      return handleError(res, 500, 'Error al obtener asistencias', 'ERROR_DB');
+    }
+
+    res.json(results);
+  });
 });
 
 // Servidor corriendo

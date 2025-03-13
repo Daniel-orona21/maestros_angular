@@ -43,16 +43,20 @@
 
     <!-- Controles de asistencia -->
     <div class="controles-asistencia" *ngIf="alumnos.length > 0">
+      <button class="btn-reporte" *ngIf="grupoSeleccionado" (click)="generarReporteAsistencias()">
+        <span class="material-symbols-outlined">description</span>
+        Reporte de Asistencias
+      </button>
       <button class="btn-guardar-asistencia" *ngIf="modoAsistencia" (click)="guardarAsistencia()">
         <span class="material-symbols-outlined">save</span>
-        Guardar Asistencia
+        {{ hayAsistenciasGuardadas ? 'Actualizar Asistencia' : 'Guardar Asistencia' }}
       </button>
       <div class="fecha-asistencia" *ngIf="modoAsistencia">
-        <input type="date" class="input-fecha" [(ngModel)]="fechaAsistencia">
+        <input type="date" class="input-fecha" [(ngModel)]="fechaAsistencia" (change)="onFechaChange()">
       </div>
       <button class="btn-modo asistenciaactivo" [class.activo]="modoAsistencia" (click)="toggleModoAsistencia()">
         <span class="material-symbols-outlined">fact_check</span>
-        Asistencia
+        Tomar Asistencia
       </button>
     </div>
 

@@ -17,4 +17,8 @@ export class GruposService {
   agregarAlumno(grupoId: number, alumno: { nombre: string, apellido: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/grupos/${grupoId}/alumnos`, alumno);
   }
+
+  guardarAsistencias(asistencias: { alumno_id: number, fecha: string, estado: 'PRESENTE' | 'AUSENTE' | 'RETARDO' }[]): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/asistencias`, { asistencias });
+  }
 } 

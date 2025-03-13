@@ -82,6 +82,28 @@
     font-size: 14px;
 }
 
+.btn-reporte {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    background-color: #f0f2f5;
+    color: #1a3d5c;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.btn-reporte:hover {
+    background-color: #e8eef5;
+    transform: translateY(-2px);
+    color: #0f2844;
+}
+
 .btn-modo:hover, .btn-agregar:hover {
     background-color: #e8eef5;
     transform: translateY(-2px);

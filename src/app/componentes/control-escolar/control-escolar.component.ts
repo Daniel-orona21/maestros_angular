@@ -15,6 +15,11 @@ interface Alumno {
   asistencia?: 'presente' | 'ausente' | 'retardo' | null;
 }
 
+interface AsistenciaResponse {
+  message: string;
+  affectedRows: number;
+}
+
 @Component({
   selector: 'app-control-escolar',
   standalone: true,
@@ -24,7 +29,7 @@ interface Alumno {
 })
 export class ControlEscolarComponent implements OnInit {
   grupos: any[] = [];
-  alumnos: any[] = [];
+  alumnos: Alumno[] = [];
   grupoSeleccionado: any = null;
   modoEliminacion: boolean = false;
   modoEdicion: boolean = false;
@@ -44,6 +49,7 @@ export class ControlEscolarComponent implements OnInit {
     carrera: '',
     modalidad: 'Clásica'
   };
+  hayAsistenciasGuardadas = false;
 
   @Output() actualizarBreadcrumb = new EventEmitter<string | null>();
 
@@ -56,6 +62,10 @@ export class ControlEscolarComponent implements OnInit {
   cargarGrupos(): void {
     this.cargando = true;
     this.error = null;
+    // Desactivar todos los modos
+    this.modoEdicion = false;
+    this.modoEliminacion = false;
+    this.modoAsistencia = false;
     this.gruposService.obtenerGrupos().subscribe({
       next: (data) => {
         this.grupos = data;
@@ -125,6 +135,51 @@ export class ControlEscolarComponent implements OnInit {
       this.modoEdicion = false;
       this.modoEliminacion = false;
       this.fechaAsistencia = new Date().toISOString().split('T')[0];
+      
+      // Verificar asistencias existentes
+      this.gruposService.verificarAsistencias(this.grupoSeleccionado.id, this.fechaAsistencia).subscribe({
+        next: (existenAsistencias) => {
+          if (existenAsistencias) {
+            this.hayAsistenciasGuardadas = true;
+            // Cargar las asistencias existentes
+            this.gruposService.obtenerAsistenciasPorFecha(this.grupoSeleccionado.id, this.fechaAsistencia).subscribe({
+              next: (asistencias) => {
+                // Marcar las asistencias en los alumnos
+                this.alumnos.forEach(alumno => {
+                  const asistenciaExistente = asistencias.find(a => a.alumno_id === alumno.id);
+                  if (asistenciaExistente) {
+                    alumno.asistencia = asistenciaExistente.estado.toLowerCase() as 'presente' | 'ausente' | 'retardo';
+                  }
+                });
+                this.alumnosFiltrados = [...this.alumnos];
+              },
+              error: (error) => {
+                console.error('Error al cargar asistencias:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'No se pudieron cargar las asistencias existentes',
+                  confirmButtonColor: '#1a3d5c'
+                });
+              }
+            });
+          } else {
+            this.hayAsistenciasGuardadas = false;
+            // Limpiar las asistencias previas
+            this.alumnos.forEach(alumno => alumno.asistencia = null);
+            this.alumnosFiltrados = [...this.alumnos];
+          }
+        },
+        error: (error) => {
+          console.error('Error al verificar asistencias:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo verificar si existen asistencias',
+            confirmButtonColor: '#1a3d5c'
+          });
+        }
+      });
     }
   }
 
@@ -478,23 +533,119 @@ export class ControlEscolarComponent implements OnInit {
     doc.save(`Lista_Alumnos_${this.grupoSeleccionado?.grado}_${this.grupoSeleccionado?.grupo}.pdf`);
   }
 
-  marcarAsistencia(alumno: any, estado: 'presente' | 'ausente' | 'retardo'): void {
-    if (!this.modoAsistencia) return;
+  marcarAsistencia(alumno: Alumno, estado: 'presente' | 'ausente' | 'retardo'): void {
+    const oldEstado = alumno.asistencia;
+    alumno.asistencia = alumno.asistencia === estado ? null : estado;
     
-    if (alumno.asistencia === estado) {
-      alumno.asistencia = null; // Si ya está marcado, lo desmarcamos
-    } else {
-      alumno.asistencia = estado; // Si no está marcado o tiene otro estado, aplicamos el nuevo
-    }
+    // Verificar si hay asistencias guardadas para la fecha actual
+    this.gruposService.verificarAsistencias(this.grupoSeleccionado.id, this.fechaAsistencia).subscribe({
+      next: (existenAsistencias) => {
+        if (existenAsistencias && oldEstado !== alumno.asistencia) {
+          this.hayAsistenciasGuardadas = true;
+        }
+      }
+    });
   }
 
   guardarAsistencia(): void {
-    // TODO: Implementar la lógica para guardar la asistencia
-    console.log('Guardando asistencia para la fecha:', this.fechaAsistencia);
-    console.log('Estado de asistencia:', this.alumnos.map(alumno => ({
-      id: alumno.id,
-      nombre: alumno.nombre,
-      asistencia: alumno.asistencia
-    })));
+    const asistenciasParaGuardar = this.alumnos
+      .filter(alumno => alumno.asistencia)
+      .map(alumno => ({
+        alumno_id: alumno.id,
+        fecha: this.fechaAsistencia,
+        estado: alumno.asistencia!.toUpperCase() as 'PRESENTE' | 'AUSENTE' | 'RETARDO'
+      }));
+
+    if (asistenciasParaGuardar.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin asistencias',
+        text: 'No hay asistencias marcadas para guardar',
+        confirmButtonColor: '#1a3d5c'
+      });
+      return;
+    }
+
+    const operacion = this.hayAsistenciasGuardadas ? 
+      this.gruposService.actualizarAsistencias(asistenciasParaGuardar) :
+      this.gruposService.guardarAsistencias(asistenciasParaGuardar);
+
+    operacion.subscribe({
+      next: (response: AsistenciaResponse) => {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Guardado!',
+          text: this.hayAsistenciasGuardadas ? 
+            'Las asistencias se han actualizado correctamente' :
+            'Las asistencias se han guardado correctamente',
+          confirmButtonColor: '#1a3d5c'
+        });
+      },
+      error: (error: unknown) => {
+        console.error('Error al guardar asistencias:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un problema al guardar las asistencias',
+          confirmButtonColor: '#1a3d5c'
+        });
+      }
+    });
+  }
+
+  onFechaChange(): void {
+    if (this.modoAsistencia && this.grupoSeleccionado) {
+      // Verificar asistencias existentes para la nueva fecha
+      this.gruposService.verificarAsistencias(this.grupoSeleccionado.id, this.fechaAsistencia).subscribe({
+        next: (existenAsistencias) => {
+          this.hayAsistenciasGuardadas = existenAsistencias;
+          if (existenAsistencias) {
+            // Cargar las asistencias existentes
+            this.gruposService.obtenerAsistenciasPorFecha(this.grupoSeleccionado.id, this.fechaAsistencia).subscribe({
+              next: (asistencias) => {
+                // Limpiar asistencias previas
+                this.alumnos.forEach(alumno => alumno.asistencia = null);
+                
+                // Marcar las asistencias en los alumnos
+                this.alumnos.forEach(alumno => {
+                  const asistenciaExistente = asistencias.find(a => a.alumno_id === alumno.id);
+                  if (asistenciaExistente) {
+                    alumno.asistencia = asistenciaExistente.estado.toLowerCase() as 'presente' | 'ausente' | 'retardo';
+                  }
+                });
+                this.alumnosFiltrados = [...this.alumnos];
+              },
+              error: (error) => {
+                console.error('Error al cargar asistencias:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'No se pudieron cargar las asistencias existentes',
+                  confirmButtonColor: '#1a3d5c'
+                });
+              }
+            });
+          } else {
+            // Limpiar las asistencias si no hay registros para la nueva fecha
+            this.alumnos.forEach(alumno => alumno.asistencia = null);
+            this.alumnosFiltrados = [...this.alumnos];
+          }
+        },
+        error: (error) => {
+          console.error('Error al verificar asistencias:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo verificar si existen asistencias',
+            confirmButtonColor: '#1a3d5c'
+          });
+        }
+      });
+    }
+  }
+
+  generarReporteAsistencias(): void {
+    // TODO: Implementar la generación del reporte de asistencias
+    console.log('Generando reporte de asistencias...');
   }
 }
