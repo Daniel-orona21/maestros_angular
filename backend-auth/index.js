@@ -1008,7 +1008,7 @@ app.post('/educacion', verificarToken, (req, res) => {
     }
 
     db.query(
-        'INSERT INTO educacion (usuario_id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO educacion (usuario_id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [req.usuario.id, institucion, titulo, especialidad, ciudad, mes_inicio, ano_inicio, mes_fin, ano_fin],
         (err, result) => {
             if (err) {
