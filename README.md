@@ -1,59 +1,57 @@
-# MaestrosAngular
+# Sistema de Control Escolar
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.2.
+Sistema web para la gestión de grupos escolares, control de alumnos y registro de asistencias.
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+- Node.js
+- Angular CLI
+- MySQL
 
+## Instalación
+
+1. **Clonar e instalar dependencias**
 ```bash
+# Clonar el repositorio
+git clone [URL_DEL_REPOSITORIO]
+cd maestros_angular
+
+# Instalar dependencias del proyecto
+npm install
+
+# Instalar dependencias del backend
+cd backend-auth
+npm install
+```
+
+## Ejecutar el Proyecto
+
+1. **Iniciar Backend**
+```bash
+cd backend-auth
+npm start
+```
+
+2. **Iniciar Frontend** (en una nueva terminal)
+```bash
+cd maestros_angular
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+La aplicación estará disponible en:
+- Frontend: `http://localhost:4200`
+- Backend: `http://localhost:5001`
 
-## Code scaffolding
+## Funcionalidades
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- ✏️ Gestión de grupos escolares
+- 👥 Control de alumnos
+- ✓ Registro de asistencias
+- 📊 Reportes en PDF
+- 🌓 Modo oscuro/claro
 
-```bash
-ng generate component component-name
-```
+## Desarrollado con
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Angular 19.0.2
+- Node.js
+- MySQL
