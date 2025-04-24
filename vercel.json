@@ -7,7 +7,7 @@
       "config": {
         "buildCommand": "npm run build -- --configuration production --budgets=[]",
         "outputDirectory": "dist/maestros_angular",
-        "zeroConfig": false
+        "distDir": "dist/maestros_angular"
       }
     }
   ],
@@ -16,14 +16,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  },
-  "github": {
-    "silent": false,
-    "autoJobCancelation": true
-  }
+  ]
 } 
