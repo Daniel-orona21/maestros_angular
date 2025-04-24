@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build --configuration production --budgets=[]",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "vercel-build": "npm install && ng build --configuration production --budgets=[]"
   },
   "private": true,
   "dependencies": {
