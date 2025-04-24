@@ -7,7 +7,7 @@
     "build": "ng build --configuration production --budgets=[]",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "vercel-build": "npm install && NODE_OPTIONS=--max_old_space_size=4096 ng build --configuration production"
+    "vercel-build": "npm install && cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" ng build"
   },
   "private": true,
   "dependencies": {
@@ -44,6 +44,7 @@
     "@angular/compiler-cli": "^19.0.0",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^22.13.9",
+    "cross-env": "^7.0.3",
     "jasmine-core": "~5.4.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
