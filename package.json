@@ -7,7 +7,7 @@
     "build": "ng build --configuration production --budgets=[]",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "vercel-build": "npm install && ng build --configuration production --max-old-space-size=4096"
+    "vercel-build": "npm install && NODE_OPTIONS=--max_old_space_size=4096 ng build --configuration production"
   },
   "private": true,
   "dependencies": {
