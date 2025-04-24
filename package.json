@@ -30,6 +30,8 @@
     "rxjs": "~7.8.0",
     "sweetalert2": "^11.17.2",
     "tslib": "^2.3.0",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {

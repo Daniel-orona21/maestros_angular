@@ -1,0 +1,13 @@
+2025-04-23 22:24:06 [INFO]: User 7 login successful 
+2025-04-23 22:25:04 [WARN]: Security event: User unknown failed login attempt 
+2025-04-23 22:50:03 [WARN]: Security event: User unknown failed login attempt 
+2025-04-23 22:50:19 [WARN]: Security event: User 7 failed login attempt 
+2025-04-23 22:50:24 [INFO]: User 7 login successful 
+2025-04-23 22:55:18 [INFO]: User 7 download log/combined 
+2025-04-23 22:55:41 [INFO]: User 7 download log/combined 
+2025-04-23 22:55:58 [WARN]: Security event: User unknown failed login attempt 
+2025-04-23 22:56:17 [INFO]: User 7 login successful 
+2025-04-23 22:56:42 [INFO]: User 7 download log/access 
+2025-04-23 22:57:12 [INFO]: User 7 download log/combined 
+2025-04-23 22:57:20 [INFO]: User 7 download log/error 
+2025-04-23 22:57:33 [INFO]: User 7 download log/operations 

@@ -50,6 +50,16 @@ La aplicación estará disponible en:
 - 📊 Reportes en PDF
 - 🌓 Modo oscuro/claro
 
+## Seguridad
+
+El sistema implementa las siguientes medidas de seguridad:
+
+- 🔒 Autenticación mediante JWT (JSON Web Tokens)
+- 🔑 Contraseñas encriptadas con bcrypt
+- 🛡️ Protección contra SQL Injection
+- ⚡ Sesiones persistentes
+- 🚫 Rutas protegidas
+
 ## Desarrollado con
 
 - Angular 19.0.2

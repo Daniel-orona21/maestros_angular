@@ -174,12 +174,16 @@ export class LoginComponent {
       return;
     }
 
+    console.log('Intentando iniciar sesión con:', this.correo);
+    
     this.authService.login(this.correo, this.contrasena).subscribe({
       next: res => {
+        console.log('Inicio de sesión exitoso para:', this.correo);
         localStorage.setItem('token', res.token);
         this.router.navigate(['/inicio']);
       },
       error: err => {
+        console.error('Error al intentar iniciar sesión:', err);
         Swal.fire({
           title: 'Error',
           text: 'Error al iniciar sesión: ' + err.error.error,

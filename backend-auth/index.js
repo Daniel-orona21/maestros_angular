@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
 const nodemailer = require('nodemailer');
+const { logger, logAccess, logOperation, logError, logSecurity } = require('./logger');
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -84,6 +85,14 @@ const verificarToken = (req, res, next) => {
     next();
   });
 };
+
+// Middleware para registro de accesos
+app.use((req, res, next) => {
+  if (req.usuario) {
+    logAccess(req.usuario.id, `${req.method} ${req.originalUrl}`);
+  }
+  next();
+});
 
 // Asegurar que el directorio de uploads existe
 const uploadDir = path.join(__dirname, 'uploads/profile-pics');
@@ -235,41 +244,58 @@ app.post('/register', async (req, res) => {
 
 // 🟢 Login de usuario (POST)
 app.post('/login', (req, res) => {
-    console.log('Datos recibidos en login:', req.body); // ✅ Verifica qué datos llegan
-  
-    const { correo, contrasena } = req.body;
-    
-    if (!correo || !contrasena) {
-      console.error('❌ Error: Faltan datos en la petición');
-      return res.status(400).json({ error: 'Faltan datos en la petición' });
+  const { correo, contrasena } = req.body;
+
+  if (!correo || !contrasena) {
+    logSecurity('unknown', 'failed login attempt', { reason: 'missing credentials', ip: req.ip });
+    return handleError(res, 400, 'Correo y contraseña son requeridos', 'ERROR_VALIDATION');
+  }
+
+  db.query('SELECT * FROM usuarios WHERE correo = ?', [correo], (err, results) => {
+    if (err) {
+      logError(err, null, { action: 'login', ip: req.ip });
+      return handleError(res, 500, 'Error al buscar el usuario', 'ERROR_DB');
     }
-  
-    const sql = 'SELECT * FROM usuarios WHERE correo = ?';
-    db.query(sql, [correo], async (err, results) => {
+
+    if (results.length === 0) {
+      logSecurity('unknown', 'failed login attempt', { reason: 'user not found', email: correo, ip: req.ip });
+      return handleError(res, 401, 'Credenciales incorrectas', 'ERROR_AUTH');
+    }
+
+    const usuario = results[0];
+
+    bcrypt.compare(contrasena, usuario.contrasena, (err, isMatch) => {
       if (err) {
-        console.error('❌ Error en la consulta SQL:', err);
-        return res.status(500).json({ error: 'Error en el servidor' });
+        logError(err, usuario.id, { action: 'password check', ip: req.ip });
+        return handleError(res, 500, 'Error al verificar contraseña', 'ERROR_INTERNAL');
       }
-  
-      if (results.length === 0) {
-        console.warn('⚠️ Advertencia: Usuario no encontrado');
-        return res.status(401).json({ error: 'Credenciales inválidas' });
-      }
-  
-      const user = results[0];
-      const isMatch = await bcrypt.compare(contrasena, user.contrasena);
-  
+
       if (!isMatch) {
-        console.warn('⚠️ Advertencia: Contraseña incorrecta');
-        return res.status(401).json({ error: 'Credenciales inválidas' });
+        logSecurity(usuario.id, 'failed login attempt', { reason: 'invalid password', ip: req.ip });
+        return handleError(res, 401, 'Credenciales incorrectas', 'ERROR_AUTH');
       }
-  
-      const token = jwt.sign({ id: user.id, nombre: user.nombre, correo: user.correo }, JWT_SECRET, { expiresIn: '1h' });
-  
-      console.log('✅ Login exitoso para:', correo);
-      res.json({ message: 'Login exitoso', token });
+
+      const token = jwt.sign(
+        { id: usuario.id, rol: usuario.rol },
+        JWT_SECRET,
+        { expiresIn: '48h' }
+      );
+
+      logAccess(usuario.id, 'login successful', { ip: req.ip });
+      
+      res.json({
+        message: 'Inicio de sesión exitoso',
+        token,
+        usuario: {
+          id: usuario.id,
+          nombre: usuario.nombre,
+          correo: usuario.correo,
+          rol: usuario.rol
+        }
+      });
     });
   });
+});
 
 // 🔄 Solicitar recuperación de contraseña
 app.post('/request-password-reset', async (req, res) => {
@@ -1829,7 +1855,7 @@ app.put('/asistencias', verificarToken, (req, res) => {
             // Si no se actualizó ninguna fila, intentar insertar
             const insertSql = 'INSERT INTO asistencias (alumno_id, fecha, estado) VALUES (?, ?, ?)';
             db.query(insertSql, [a.alumno_id, a.fecha, a.estado], (err, insertResult) => {
-              if (err) reject(err);
+        if (err) reject(err);
               else resolve(insertResult);
             });
           } else {
@@ -1893,6 +1919,75 @@ app.get('/grupos/:grupoId/asistencias/fecha/:fecha', verificarToken, (req, res) 
 
     res.json(results);
   });
+});
+
+// Autenticación para acceso a logs (solo administradores)
+const verificarAdmin = (req, res, next) => {
+  // Se elimina la verificación de rol, solo se requiere estar autenticado
+  next();
+};
+
+// Obtener tipos de logs disponibles
+app.get('/logs/types', verificarToken, verificarAdmin, (req, res) => {
+  const logDirectory = path.join(__dirname, 'logs');
+  
+  fs.readdir(logDirectory, (err, files) => {
+    if (err) {
+      logError(err, req.usuario.id, { action: 'read log directory' });
+      return res.status(500).json({ error: 'Error al leer directorio de logs' });
+    }
+    
+    const logFiles = files.filter(file => file.endsWith('.log'))
+                          .map(file => ({
+                            name: file.replace('.log', ''),
+                            path: file
+                          }));
+    
+    res.json(logFiles);
+  });
+});
+
+// Obtener contenido de un log específico
+app.get('/logs/:logName', verificarToken, verificarAdmin, (req, res) => {
+  const logName = req.params.logName;
+  const logPath = path.join(__dirname, 'logs', `${logName}.log`);
+  
+  if (!fs.existsSync(logPath)) {
+    return res.status(404).json({ error: 'Archivo de log no encontrado' });
+  }
+  
+  fs.readFile(logPath, 'utf8', (err, data) => {
+    if (err) {
+      logError(err, req.usuario.id, { action: 'read log file', logName });
+      return res.status(500).json({ error: 'Error al leer archivo de log' });
+    }
+    
+    // Convertir el contenido en un array de objetos JSON
+    const logLines = data.split('\n')
+                          .filter(line => line.trim())
+                          .map(line => {
+                            try {
+                              return JSON.parse(line);
+                            } catch (e) {
+                              return { raw: line };
+                            }
+                          });
+    
+    res.json(logLines);
+  });
+});
+
+// Descargar archivo de log
+app.get('/logs/:logName/download', verificarToken, verificarAdmin, (req, res) => {
+  const logName = req.params.logName;
+  const logPath = path.join(__dirname, 'logs', `${logName}.log`);
+  
+  if (!fs.existsSync(logPath)) {
+    return res.status(404).json({ error: 'Archivo de log no encontrado' });
+  }
+  
+  logOperation(req.usuario.id, 'download', `log/${logName}`);
+  res.download(logPath);
 });
 
 // Servidor corriendo

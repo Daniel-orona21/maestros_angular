@@ -684,29 +684,29 @@ export class ControlEscolarComponent implements OnInit {
       const ultimoDia = new Date(this.anioSeleccionado, this.mesSeleccionado, 0).getDate();
       
       // Generar array con todos los días del mes
-      this.diasDelMes = Array.from({length: ultimoDia}, (_, i) => i + 1);
-      
+    this.diasDelMes = Array.from({length: ultimoDia}, (_, i) => i + 1);
+
       // Limpiar asistencias previas
-      this.asistenciasMes = [];
+    this.asistenciasMes = [];
       
       // Cargar asistencias para cada día del mes
-      for (const dia of this.diasDelMes) {
+    for (const dia of this.diasDelMes) {
         const fechaDia = `${this.anioSeleccionado}-${String(this.mesSeleccionado).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
-        try {
+      try {
           const asistencias = await this.gruposService.obtenerAsistenciasPorFecha(
             this.grupoSeleccionado.id,
             fechaDia
           ).toPromise();
           
-          if (asistencias) {
-            this.asistenciasMes.push({
+        if (asistencias) {
+          this.asistenciasMes.push({
               fecha: fechaDia,
               asistencias: asistencias
-            });
-          }
-        } catch (error) {
-          console.error(`Error al cargar asistencias para ${fechaDia}:`, error);
+          });
         }
+      } catch (error) {
+          console.error(`Error al cargar asistencias para ${fechaDia}:`, error);
+      }
       }
     } catch (error) {
       console.error('Error al cargar las asistencias:', error);

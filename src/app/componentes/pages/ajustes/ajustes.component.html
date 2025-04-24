@@ -89,6 +89,43 @@
       </select>
     </div>
   </div>
+  
+  <!-- Sección de logs -->
+  <div class="ajustes-section">
+    <h2>Registros del Sistema</h2>
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">receipt_long</span>
+        <div class="setting-text">
+          <h3>Logs de Actividad</h3>
+          <p>Descargar registros para auditoría y seguimiento</p>
+        </div>
+      </div>
+      <select class="select-input" [(ngModel)]="selectedLogType">
+        <option value="combined">Logs combinados</option>
+        <option value="access">Accesos</option>
+        <option value="operations">Operaciones</option>
+        <option value="error">Errores</option>
+        <option value="security">Seguridad</option>
+      </select>
+    </div>
+    
+    <div class="setting-item">
+      <div class="setting-info">
+        <span class="material-symbols-outlined">download</span>
+        <div class="setting-text">
+          <h3>Descargar Logs</h3>
+          <p>Obtener archivo con registros de actividad</p>
+        </div>
+      </div>
+      <div class="button-group">
+        <button class="action-button" (click)="downloadLog()">
+          <span class="material-symbols-outlined">file_download</span>
+          Descargar
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div class="ajustes-section">
     <h2>Sesión</h2>
