@@ -9,6 +9,7 @@ declare const grecaptcha: any;
 declare global {
   interface Window {
     onCaptchaSuccess: (response: string) => void;
+    gtag: (...args: any[]) => void;
   }
 }
 
@@ -54,6 +55,16 @@ export class LoginComponent {
         this.captchaResponse = response;
       });
     };
+  }
+
+  // Método para rastrear eventos de Google Analytics
+  trackEvent(action: string, category: string, label?: string): void {
+    if (window.gtag) {
+      window.gtag('event', action, {
+        'event_category': category,
+        'event_label': label
+      });
+    }
   }
 
   // Método para validar correo
@@ -104,6 +115,13 @@ export class LoginComponent {
       this.captchaResponse = '';
       grecaptcha.reset();
     }
+    
+    // Track which panel is viewed
+    this.trackEvent(
+      activate ? 'view_registration' : 'view_login', 
+      'user_interaction', 
+      activate ? 'Registration Panel' : 'Login Panel'
+    );
   }
 
   toggleContrasenaRegistro(): void {
@@ -134,6 +152,9 @@ export class LoginComponent {
       this.captchaResponse
     ).subscribe({
       next: res => {
+        // Track successful registration
+        this.trackEvent('register_success', 'user_auth', this.correo);
+        
         Swal.fire({
           title: '¡Éxito!',
           text: 'Registro exitoso',
@@ -147,6 +168,9 @@ export class LoginComponent {
         grecaptcha.reset();
       },
       error: err => {
+        // Track registration error
+        this.trackEvent('register_error', 'user_auth', err.error.error);
+        
         Swal.fire({
           title: 'Error',
           text: 'Error en el registro: ' + err.error.error,
@@ -179,11 +203,19 @@ export class LoginComponent {
     this.authService.login(this.correo, this.contrasena).subscribe({
       next: res => {
         console.log('Inicio de sesión exitoso para:', this.correo);
+        
+        // Track successful login
+        this.trackEvent('login_success', 'user_auth', this.correo);
+        
         localStorage.setItem('token', res.token);
         this.router.navigate(['/inicio']);
       },
       error: err => {
         console.error('Error al intentar iniciar sesión:', err);
+        
+        // Track login error
+        this.trackEvent('login_error', 'user_auth', err.error?.error || 'Unknown error');
+        
         Swal.fire({
           title: 'Error',
           text: 'Error al iniciar sesión: ' + err.error.error,
@@ -201,6 +233,9 @@ export class LoginComponent {
     this.modalRecuperacionVisible = true;
     this.correoRecuperacion = '';
     this.errorRecuperacion = '';
+    
+    // Track password recovery modal view
+    this.trackEvent('view_password_recovery', 'user_interaction');
   }
 
   cerrarModalRecuperacion(): void {
@@ -234,6 +269,9 @@ export class LoginComponent {
 
     this.authService.requestPasswordReset(this.correoRecuperacion).subscribe({
       next: (response) => {
+        // Track successful password recovery request
+        this.trackEvent('password_recovery_success', 'user_auth', this.correoRecuperacion);
+        
         Swal.fire({
           title: '¡Enviado!',
           text: 'Se han enviado las instrucciones de recuperación a tu correo electrónico',
@@ -245,6 +283,10 @@ export class LoginComponent {
         this.cerrarModalRecuperacion();
       },
       error: (error) => {
+        // Track password recovery error
+        this.trackEvent('password_recovery_error', 'user_auth', 
+          error.status === 404 ? 'Email not found' : 'Server error');
+        
         if (error.status === 404) {
           this.errorRecuperacion = 'No existe una cuenta con este correo electrónico';
         } else {

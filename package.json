@@ -26,6 +26,7 @@
     "jspdf": "^3.0.0",
     "jspdf-autotable": "^5.0.2",
     "ng-recaptcha": "^13.2.1",
+    "ngx-google-analytics": "^14.0.1",
     "ngx-image-cropper": "^9.1.2",
     "rxjs": "~7.8.0",
     "sweetalert2": "^11.17.2",
