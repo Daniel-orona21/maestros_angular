@@ -6,7 +6,8 @@
       "use": "@vercel/static-build",
       "config": {
         "buildCommand": "npm run build -- --configuration production --budgets=[]",
-        "outputDirectory": "dist/maestros_angular"
+        "outputDirectory": "dist/maestros_angular",
+        "zeroConfig": false
       }
     }
   ],
@@ -15,5 +16,14 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "github": {
+    "silent": false,
+    "autoJobCancelation": true
+  }
 } 
