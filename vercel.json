@@ -5,10 +5,9 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "installCommand": "npm install --legacy-peer-deps",
-        "buildCommand": "npm run build -- --configuration production --budgets=[]",
-        "outputDirectory": "dist/maestros_angular",
-        "distDir": "dist/maestros_angular"
+        "install": ["npm", "install", "--legacy-peer-deps"],
+        "build": ["npm", "run", "build", "--", "--configuration", "production", "--budgets=[]"],
+        "outputDirectory": "dist/maestros_angular"
       }
     }
   ],
