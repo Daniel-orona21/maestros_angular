@@ -12,3 +12,5 @@
 {"details":{},"level":"info","message":"User 7 download log/error","operation":"download","resource":"log/error","service":"maestros-api","timestamp":"2025-04-24T04:57:20.908Z","type":"operation","userId":7}
 {"details":{},"level":"info","message":"User 7 download log/operations","operation":"download","resource":"log/operations","service":"maestros-api","timestamp":"2025-04-24T04:57:33.673Z","type":"operation","userId":7}
 {"action":"login successful","details":{"ip":"::1"},"level":"info","message":"User 7 login successful","service":"maestros-api","timestamp":"2025-04-24T05:40:07.451Z","type":"access","userId":7}
+{"action":"login successful","details":{"ip":"::1"},"level":"info","message":"User 7 login successful","service":"maestros-api","timestamp":"2025-04-25T22:22:43.711Z","type":"access","userId":7}
+{"details":{},"level":"info","message":"User 7 download log/combined","operation":"download","resource":"log/combined","service":"maestros-api","timestamp":"2025-04-25T22:23:01.604Z","type":"operation","userId":7}
